@@ -193,7 +193,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 536c412739143fc4db0fd19b9e058700, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 200
+  movementSpeed: 4
+  jumpStrength: 5
+  gravity: 1
+  jumpDuration: 0.25
 --- !u!1001 &1588031744
 Prefab:
   m_ObjectHideFlags: 0
@@ -207,7 +210,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013709434024, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 2.04
+      value: 0.085
       objectReference: {fileID: 0}
     - target: {fileID: 4000013709434024, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
       propertyPath: m_LocalPosition.z
@@ -236,7 +239,7 @@ Prefab:
     - target: {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
         type: 2}
       propertyPath: m_GravityScale
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4000013709434024, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
       propertyPath: m_LocalScale.x
@@ -255,6 +258,30 @@ Prefab:
       propertyPath: m_LinearDrag
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1000011200174458, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
+        type: 2}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
+        type: 2}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
+        type: 2}
+      propertyPath: m_UseAutoMass
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
+        type: 2}
+      propertyPath: m_Mass
+      value: 0.25
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
   m_IsPrefabParent: 0
@@ -270,10 +297,9 @@ GameObject:
   - 23: {fileID: 1916361495}
   - 50: {fileID: 1916361496}
   - 61: {fileID: 1916361499}
-  - 114: {fileID: 1916361500}
   m_Layer: 0
   m_Name: Platform
-  m_TagString: Untagged
+  m_TagString: Floor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -358,15 +384,3 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
---- !u!114 &1916361500
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1916361494}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 536c412739143fc4db0fd19b9e058700, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementSpeed: 0
