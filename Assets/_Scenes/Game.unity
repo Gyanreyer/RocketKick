@@ -194,7 +194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 4
-  jumpStrength: 5
+  jumpStrength: 4
   gravity: 1
   jumpDuration: 0.25
 --- !u!1001 &1588031744

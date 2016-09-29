@@ -11,11 +11,12 @@ public class PlayerController : MonoBehaviour {
     public float gravity = 1f;
 
     private bool grounded = true;
-    private Transform groundCheck;
+    //private bool pressedLastFrame
 
     public float jumpDuration = 1f;
     private float jumpTimer;
-    
+
+    private float chargeTimer;
 
 	// Use this for initialization
 	void Start () {
@@ -26,36 +27,30 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () {
 
+        //Get input from left stick and put in x axis of rigidbody's velocity
         playerRB.velocity = new Vector2(Input.GetAxis("Left Stick X Axis P1") * movementSpeed,playerRB.velocity.y);
-        //player controls go here
-        //velocity.x = Input.GetAxis("Left Stick X Axis P1") * movementSpeed;
 
-        if (Input.GetButton("A"))
+
+        //If A button initially pressed, start jump w/ burst of upward force - jumpReleased prevents from constantly jumping if you hold it down
+        if (Input.GetButtonDown("A") && grounded)
         {
-            Vector2 jumpForce = Vector2.zero;
-
-            if (grounded)
-            {
-                jumpForce.y = jumpStrength*5;
-                grounded = false;
-
-                jumpTimer = 0;
-            }
-            else if(jumpTimer < jumpDuration)
-            {
-                jumpTimer += Time.deltaTime;
-                jumpForce.y = jumpStrength;
-            }
-
-            playerRB.AddForce(jumpForce);
+            playerRB.AddForce(new Vector2(0, jumpStrength*10));
+            grounded = false;
+            jumpTimer = 0;
         }
-        else
-        {
+
+        //If A button is held, continue adding force for a bit so you can increase jump height by holding
+        else if (Input.GetButton("A") && jumpTimer < jumpDuration && !grounded)
+        {       
+            playerRB.AddForce(new Vector2(0,jumpStrength));
+            jumpTimer += Time.deltaTime;
+        }
+
+        //If jump button has been released, set jumpReleased accordingly
+        else if (Input.GetButtonUp("A"))
+        { 
             jumpTimer = jumpDuration;
         }
-
-        //playerRB.velocity = velocity * Time.deltaTime;
-        //transform.position += (velocity * Time.deltaTime);
     }
 
 
