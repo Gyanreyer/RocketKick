@@ -13,7 +13,10 @@ public class PlayerController : MonoBehaviour {
     private float chargeKickTimer;
     public float chargeLength;
 
+    private bool kicking;
+
     public float maxKick;
+    public float minKick;
 
 	// Use this for initialization
 	void Start () {
@@ -38,22 +41,34 @@ public class PlayerController : MonoBehaviour {
             }
 
         }
-        else if(kickForce.sqrMagnitude > 0)
+        else if(kickForce.sqrMagnitude > 0 && !kick)
         {
-            kickForce *= (maxKick/2) + (chargeKickTimer / chargeLength) * maxKick;
-            chargeKickTimer = 0;     
+            float kickMagnitude = (chargeKickTimer / chargeLength) * maxKick;
+
+            if (kickMagnitude < minKick)
+                kickMagnitude = minKick;
+
+            kickForce *= kickMagnitude;
+            chargeKickTimer = 0;
+
 
             kick = true;
         }
+
+        if(transform.position.y < -7)
+        {
+            transform.position = new Vector3(0, -3, 0);
+        }
+
     }
 
     //Fixed update for physics stuff
     void FixedUpdate()
     {
         if (kick)
-        {
+        { 
             
-            playerRB.AddForce(new Vector2(kickForce.x, kickForce.y),ForceMode2D.Impulse);
+            playerRB.AddForce(Vector2.ClampMagnitude(kickForce, maxKick),ForceMode2D.Impulse);
             kick = false;
 
             kickForce = Vector2.zero;

@@ -133,6 +133,11 @@ Prefab:
       propertyPath: m_Name
       value: Platform
       objectReference: {fileID: 0}
+    - target: {fileID: 61000011483358358, guid: 443439ef26b69b5498472d5358665c65,
+        type: 2}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 6200000, guid: f6fd4769611a75947adab77aed76092d, type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 443439ef26b69b5498472d5358665c65, type: 2}
   m_IsPrefabParent: 0
@@ -149,7 +154,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013709434024, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -3.31
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 4000013709434024, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
       propertyPath: m_LocalPosition.z
@@ -200,8 +205,8 @@ Prefab:
       value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
-    - {fileID: 61000014029842052, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
+    - {fileID: 0}
+    - {fileID: 0}
   m_ParentPrefab: {fileID: 100100000, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
   m_IsPrefabParent: 0
 --- !u!1 &318830200 stripped
@@ -234,7 +239,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0.5
   m_IsKinematic: 0
   m_Interpolate: 0
   m_SleepingMode: 1
@@ -411,22 +416,10 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 114000013266951700, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
         type: 2}
-      propertyPath: maxKick
-      value: 10
+      propertyPath: minKick
+      value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 114000013266951700, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
-        type: 2}
-      propertyPath: chargeLength
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114000013266951700, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
-        type: 2}
-      propertyPath: movementSpeed
-      value: 2
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 50000014252308078, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
-    - {fileID: 61000014029842052, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf, type: 2}
   m_IsPrefabParent: 0
 --- !u!1 &1588031745 stripped
@@ -434,24 +427,7 @@ GameObject:
   m_PrefabParentObject: {fileID: 1000011200174458, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
     type: 2}
   m_PrefabInternal: {fileID: 1588031744}
---- !u!50 &1588031746
-Rigidbody2D:
-  serializedVersion: 2
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1588031745}
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 4
---- !u!61 &1588031747
+--- !u!61 &1588031746
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -460,8 +436,8 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.8, y: 0.8}
