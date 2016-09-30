@@ -6,7 +6,6 @@ public class PlayerController : MonoBehaviour {
     public int playerNum;
 
     private Rigidbody2D playerRB;
-    private Vector3 velocity;
     public float movementSpeed = 4f;
     public float jumpStrength = 1f;
 
@@ -15,25 +14,31 @@ public class PlayerController : MonoBehaviour {
     public float jumpDuration = 1f;
     private float jumpTimer;
 
-    private float chargeTimer;
+    private Vector2 kickForce;
+    private bool kick;
+    private float chargeKickTimer;
+    public float chargeLength;
+
+    public float maxKick;
+
+    private Vector2 velocity;
 
 	// Use this for initialization
 	void Start () {
         playerRB = GetComponent<Rigidbody2D>();
-        velocity = Vector3.zero;
     }
 	
 	// Update is called once per frame
-	void FixedUpdate () {
+	void Update () {
 
         //Get input from left stick and put in x axis of rigidbody's velocity
-        playerRB.velocity = new Vector2(Input.GetAxis("Left Stick X Axis P" + playerNum) * movementSpeed,playerRB.velocity.y);
+        velocity = new Vector2(Input.GetAxis("Left Stick X Axis P" + playerNum) * movementSpeed,playerRB.velocity.y);
 
-
+        /*
         //If A button initially pressed, start jump w/ burst of upward force - jumpReleased prevents from constantly jumping if you hold it down
-        if (Input.GetButtonDown("A P" + playerNum) && grounded)
+        if (Input.GetButton("A P" + playerNum) && grounded)
         {
-            playerRB.velocity = new Vector2(playerRB.velocity.x,0);
+            velocity = new Vector2(playerRB.velocity.x,0);
             playerRB.AddForce(new Vector2(0, jumpStrength), ForceMode2D.Impulse);
             grounded = false;
             jumpTimer = 0;
@@ -50,11 +55,47 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetButtonUp("A P" + playerNum))
         {
             jumpTimer = jumpDuration;
+        }*/
+
+        Vector2 rightStick = new Vector2(Input.GetAxis("Right Stick X Axis P" + playerNum), Input.GetAxis("Right Stick Y Axis P" + playerNum));
+
+        if (rightStick.magnitude > 0.75)
+        {  
+            kickForce = rightStick.normalized;
+
+            if (chargeKickTimer < chargeLength)
+            {
+                chargeKickTimer += Time.deltaTime;
+            }
+
+        }
+        else if(kickForce.sqrMagnitude > 0)
+        {
+            kickForce *= (chargeKickTimer / chargeLength) * maxKick;
+            chargeKickTimer = 0;
+
+            
+
+            kick = true;
         }
     }
 
+    void FixedUpdate()
+    {
+        playerRB.velocity = velocity;
 
-    void OnTriggerEnter2D(Collider2D other)
+        if (kick)
+        {
+            playerRB.AddForce(new Vector2(kickForce.x*10,kickForce.y),ForceMode2D.Impulse);
+            kick = false;
+
+            kickForce = Vector2.zero;
+        }
+
+    }
+
+
+    void OnCollisionEnter2D(Collision2D other)
     {
         grounded = true;
     }

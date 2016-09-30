@@ -4,6 +4,11 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour {
 
+    public GameObject playerPrefab;
+
+    bool[] players = new bool[4];
+    public int playerCount = 0;
+
 	// Initialization, executes before Start()
 	void Awake () {
         //If there's already a GM in the scene, destroy this one so no duplicates
@@ -18,6 +23,18 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+        for(int i = 1; i <= 4; i++)
+        {
+            if (Input.GetButtonDown("Start Button P" + i) && !players[i])
+            {
+                players[i] = true;
+                playerCount++;
+            }
+        }
+        
+
+
 	
 	}
 
