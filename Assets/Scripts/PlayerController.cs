@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
-    public int playerNum;
+    public int playerNum = 0;
 
     private Rigidbody2D playerRB;
     public float movementSpeed = 4f;
@@ -18,9 +18,25 @@ public class PlayerController : MonoBehaviour {
     public float maxKick;
     public float minKick;
 
+    public int maxNumKicks = 3;
+    private int kicksLeft;
+
+    private GameObject feet;
+
 	// Use this for initialization
 	void Start () {
         playerRB = GetComponent<Rigidbody2D>();
+
+        kicksLeft = maxNumKicks; 
+
+        if(playerNum!=0)
+            feet = GameObject.Find("Feet" + playerNum);
+    }
+
+    public void setPlayerNum(int i)
+    {
+        playerNum = i;
+        feet = GameObject.Find("Feet" + i);
     }
 	
 	// Update is called once per frame
@@ -51,8 +67,9 @@ public class PlayerController : MonoBehaviour {
             kickForce *= kickMagnitude;
             chargeKickTimer = 0;
 
-
             kick = true;
+
+            kicksLeft--;
         }
 
         if(transform.position.y < -7)
@@ -60,21 +77,53 @@ public class PlayerController : MonoBehaviour {
             transform.position = new Vector3(0, -3, 0);
         }
 
+        
+        if (playerNum != 0)
+        {
+            feet.transform.position = transform.position;
+
+            BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();
+            if (kicksLeft <= maxNumKicks)
+            {
+                footCollider.enabled = true;
+                footCollider.offset = playerRB.velocity.normalized * .5f;
+            }
+            else
+            {
+                footCollider.enabled = false;
+            }
+        }
+
     }
 
     //Fixed update for physics stuff
     void FixedUpdate()
     {
-        if (kick)
-        { 
-            
+        if (kick && kicksLeft > 0)
+        {
+            playerRB.velocity = Vector2.zero;
+
             playerRB.AddForce(Vector2.ClampMagnitude(kickForce, maxKick),ForceMode2D.Impulse);
             kick = false;
 
             kickForce = Vector2.zero;
         }
+    }
 
-        //playerRB.velocity += velocity; THIS CODE BROKE EVERYTHING
+    void OnCollisionStay2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "Floor")
+        {
+            kicksLeft = maxNumKicks;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.gameObject.tag == "Feet" && other.gameObject.name.CompareTo("Feet"+playerNum) != 0)
+        {
+            Debug.Log(playerNum + " died");
+        }
     }
 
 
