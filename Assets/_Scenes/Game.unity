@@ -197,6 +197,10 @@ Prefab:
       propertyPath: playerNum
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 4000013024357890, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
   m_IsPrefabParent: 0
@@ -296,7 +300,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4000012538831572, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -3.65
+      value: -2.68
       objectReference: {fileID: 0}
     - target: {fileID: 4000012538831572, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
       propertyPath: m_LocalPosition.y
@@ -329,14 +333,6 @@ Prefab:
     - target: {fileID: 1000012521809432, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
       propertyPath: m_Name
       value: P1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1000013465188308, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
-      propertyPath: m_Name
-      value: Player1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1000013961746896, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}
-      propertyPath: m_Name
-      value: Feet1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b, type: 2}

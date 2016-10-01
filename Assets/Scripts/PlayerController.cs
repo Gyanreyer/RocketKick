@@ -13,8 +13,6 @@ public class PlayerController : MonoBehaviour {
     private float chargeKickTimer;
     public float chargeLength;
 
-    private bool kicking;
-
     public float maxKick;
     public float minKick;
 
@@ -22,10 +20,12 @@ public class PlayerController : MonoBehaviour {
     private int kicksLeft;
 
     private GameObject feet;
+    private ParticleSystem partSys;
 
 	// Use this for initialization
 	void Start () {
         playerRB = GetComponent<Rigidbody2D>();
+        partSys = GetComponentInChildren<ParticleSystem>();
 
         kicksLeft = maxNumKicks; 
 
@@ -70,6 +70,7 @@ public class PlayerController : MonoBehaviour {
             kick = true;
 
             kicksLeft--;
+            
         }
 
         if(transform.position.y < -7)
@@ -77,13 +78,13 @@ public class PlayerController : MonoBehaviour {
             transform.position = new Vector3(0, -3, 0);
         }
 
-        
-        if (playerNum != 0)
+
+        if (feet)
         {
             feet.transform.position = transform.position;
 
             BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();
-            if (kicksLeft <= maxNumKicks)
+            if (playerRB.velocity.sqrMagnitude > 0)
             {
                 footCollider.enabled = true;
                 footCollider.offset = playerRB.velocity.normalized * .5f;
@@ -93,6 +94,16 @@ public class PlayerController : MonoBehaviour {
                 footCollider.enabled = false;
             }
         }
+
+        //This is apparently deprecated now but how the hell else do you set emission rate when emission.rate is read-only       
+        partSys.emissionRate = (40*chargeKickTimer / chargeLength);
+
+        if (chargeKickTimer >= chargeLength)
+            partSys.startColor = new Color(1, 0.5f, 0.25f, 1);
+
+        else
+            partSys.startColor = Color.yellow;
+
 
     }
 
@@ -120,9 +131,10 @@ public class PlayerController : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.gameObject.tag == "Feet" && other.gameObject.name.CompareTo("Feet"+playerNum) != 0)
+        //If you collide with feet and they're not your own, you died
+        if(other.gameObject.tag == "Feet" && other.gameObject.name != feet.name)
         {
-            Debug.Log(playerNum + " died");
+            Destroy(transform.parent.gameObject);//Destroy parent gameobject to get rid of the whole thing - we need to handle this some other way
         }
     }
 

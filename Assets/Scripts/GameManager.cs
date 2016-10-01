@@ -23,9 +23,11 @@ public class GameManager : MonoBehaviour {
 
         DontDestroyOnLoad(gameObject);//Don't destroy this object, it'll persist between scenes
 
-
-        promptText = GameObject.Find("StartPrompt");
-        promptText.SetActive(false);
+        if (SceneManager.GetActiveScene().buildIndex == 0)
+        {
+            promptText = GameObject.Find("StartPrompt");
+            promptText.SetActive(false);
+        }
     }
 
     // Update is called once per frame
