@@ -244,7 +244,7 @@ InputManager:
     invert: 0
     type: 2
     axis: 3
-    joyNum: 2
+    joyNum: 3
   - serializedVersion: 3
     m_Name: Right Stick X Axis P4
     descriptiveName: 

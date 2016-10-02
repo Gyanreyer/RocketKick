@@ -732,6 +732,11 @@ MonoBehaviour:
   playerPrefab: {fileID: 1000012521809432, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b,
     type: 2}
   playerCount: 0
+  skins:
+  - {fileID: 2100000, guid: 51c6a1d37dcfc654593cf866d75aa324, type: 2}
+  - {fileID: 2100000, guid: 7053dda3681ea2f40a34bf5e75efdcbc, type: 2}
+  - {fileID: 2100000, guid: 1db673cd14befe4428a037c6fb58713e, type: 2}
+  - {fileID: 2100000, guid: d4d338bb352e7814180df85002fa1756, type: 2}
 --- !u!4 &1951433294
 Transform:
   m_ObjectHideFlags: 0

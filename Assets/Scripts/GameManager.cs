@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
@@ -10,7 +10,14 @@ public class GameManager : MonoBehaviour {
     bool[] players = new bool[4];
     public int playerCount = 0;
 
+    private int playersAlive = 0;
+
     GameObject promptText;
+
+    public Material[] skins = new Material[4];
+
+    private GameObject[] activePlayers = new GameObject[4];
+    int[] playerScores = new int[4];
 
 	// Initialization, executes before Start()
 	void Awake () {
@@ -28,12 +35,13 @@ public class GameManager : MonoBehaviour {
             promptText = GameObject.Find("StartPrompt");
             promptText.SetActive(false);
         }
+
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        //If on main menu, get active controllers
         if (SceneManager.GetActiveScene().buildIndex == 0)
         {
 
@@ -52,15 +60,14 @@ public class GameManager : MonoBehaviour {
                     loadScene(1);
                 }
             }
-        
-
+            
+            //When more than one person is ready, you can start game
             if (playerCount > 1)
             {
                 promptText.SetActive(true);
             }
         }
-
-	
+        
 	}
 
     public void loadScene(int i)
@@ -71,6 +78,8 @@ public class GameManager : MonoBehaviour {
 
     public void spawnPlayers()
     {
+        playersAlive = 0;
+
         for(int i = 0; i < 4; i++)
         {
             if(players[i])
@@ -80,12 +89,41 @@ public class GameManager : MonoBehaviour {
                 GameObject p = Instantiate(playerPrefab);
                 p.name = "P" + number;
                 p.transform.FindChild("Feet").name = "Feet"+number;
-                p.transform.FindChild("Player").name = "Player"+number;
 
-                p.GetComponentInChildren<PlayerController>().setPlayerNum(number);
+                activePlayers[i] = p.transform.FindChild("Player").gameObject;
+                activePlayers[i].name = "Player" + number;
+                activePlayers[i].GetComponent<MeshRenderer>().material = skins[i];
+                activePlayers[i].GetComponent<PlayerController>().setPlayerNum(number);
+
+                playersAlive++;
+            }
+        }
+    }
+
+    public void killPlayer(int index)
+    {
+        playersAlive--;
+
+        Destroy(activePlayers[index].transform.parent.gameObject);
+        activePlayers[index] = null;
+
+        //If only one player left, increase that player's score and then respawn for next round
+        if (playersAlive == 1)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (activePlayers[i])
+                {
+                    playerScores[i]++;
+                    Destroy(activePlayers[i].transform.parent.gameObject,1);
+                    activePlayers[i] = null;
+                    break;
+                }
             }
 
+            Invoke("spawnPlayers",1.5f);
         }
+        
     }
 
 
