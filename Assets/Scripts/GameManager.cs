@@ -95,6 +95,9 @@ public class GameManager : MonoBehaviour {
                 activePlayers[i].GetComponent<MeshRenderer>().material = skins[i];
                 activePlayers[i].GetComponent<PlayerController>().setPlayerNum(number);
 
+                GameObject.Find("P" + number + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
+                GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Alive!";
+
                 playersAlive++;
             }
         }
@@ -103,6 +106,10 @@ public class GameManager : MonoBehaviour {
     public void killPlayer(int index)
     {
         playersAlive--;
+
+        int number = index + 1;
+        GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
+
 
         Destroy(activePlayers[index].transform.parent.gameObject);
         activePlayers[index] = null;
@@ -114,6 +121,7 @@ public class GameManager : MonoBehaviour {
             {
                 if (activePlayers[i])
                 {
+                    GameObject.Find("P" + (i+1) + "Text").GetComponent<Text>().text = "Player " + (i+1) + " : Winner!";
                     playerScores[i]++;
                     Destroy(activePlayers[i].transform.parent.gameObject,1);
                     activePlayers[i] = null;
