@@ -117,15 +117,16 @@ public class PlayerController : MonoBehaviour {
         }
 
         //This is apparently deprecated now but how the hell else do you set emission rate when emission.rate is read-only       
-        chargePartSys.emissionRate = (40*chargeKickTimer / chargeLength);
+        chargePartSys.emissionRate = (60*chargeKickTimer / chargeLength);
 
+        /* Previous method
         if (chargeKickTimer >= chargeLength)
             chargePartSys.startColor = new Color(1, 0.5f, 0.25f, 1);
-
         else
             chargePartSys.startColor = Color.yellow;
-
-
+        */
+        chargePartSys.startColor = new Color(1, 1f / (chargeKickTimer * 2), 0.25f, 1);
+        chargePartSys.startSpeed = 1 + (chargeKickTimer / 2f);
     }
 
     //Fixed update for physics stuff
