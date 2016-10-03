@@ -19,8 +19,10 @@ public class GameManager : MonoBehaviour {
     private GameObject[] activePlayers = new GameObject[4];
     int[] playerScores = new int[4];
 
-	// Initialization, executes before Start()
-	void Awake () {
+    public GameObject[] spawnPoints;    //assigned in the FindSpawnpoints() method
+
+    // Initialization, executes before Start()
+    void Awake () {
         //If there's already a GM in the scene, destroy this one so no duplicates
         if (FindObjectsOfType(GetType()).Length > 1)
         {
@@ -78,6 +80,14 @@ public class GameManager : MonoBehaviour {
 
     public void spawnPlayers()
     {
+        //Gather spawnpoints
+        PopulateSpawnpoints();
+
+        //Array to tell which spawnpoints are occupied
+        bool[] spawnsUsed = new bool[spawnPoints.Length];
+
+        int spawnIndex = 0;
+
         playersAlive = 0;
 
         for(int i = 0; i < 4; i++)
@@ -89,6 +99,19 @@ public class GameManager : MonoBehaviour {
                 GameObject p = Instantiate(playerPrefab);
                 p.name = "P" + number;
                 p.transform.FindChild("Feet").name = "Feet"+number;
+
+                //Finding a good spawnpoint
+                spawnIndex = (int)Random.Range(0, spawnPoints.Length - 1);//used to get a random spawnpoint... we can change this later if you guys don't like random spawns
+                do
+                {
+                    ++spawnIndex;
+                    if (spawnIndex >= spawnPoints.Length)
+                        spawnIndex = 0;
+                } while (spawnsUsed[spawnIndex]);
+                //Set spawn to used
+                spawnsUsed[spawnIndex] = true;
+                //Udpate position based on that spawnpoint
+                p.transform.position = spawnPoints[spawnIndex].transform.position;
 
                 activePlayers[i] = p.transform.FindChild("Player").gameObject;
                 activePlayers[i].name = "Player" + number;
@@ -141,5 +164,13 @@ public class GameManager : MonoBehaviour {
         {
             spawnPlayers();
         }
+    }
+
+    /// <summary>
+    /// Populates the spawnPoints array, should be called right before spawning players (I call it in the spawnPlayers() method)
+    /// </summary>
+    void PopulateSpawnpoints()
+    {
+        spawnPoints = GameObject.FindGameObjectsWithTag("Spawn Point");
     }
 }

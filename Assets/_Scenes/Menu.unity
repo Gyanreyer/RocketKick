@@ -737,6 +737,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 7053dda3681ea2f40a34bf5e75efdcbc, type: 2}
   - {fileID: 2100000, guid: 1db673cd14befe4428a037c6fb58713e, type: 2}
   - {fileID: 2100000, guid: d4d338bb352e7814180df85002fa1756, type: 2}
+  spawnPoints: []
 --- !u!4 &1951433294
 Transform:
   m_ObjectHideFlags: 0
