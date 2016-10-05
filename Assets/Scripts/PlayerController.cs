@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour {
 
     public int livesLeft = 5;
 
-    private GameObject feet;
+    public GameObject feet;
     private ParticleSystem chargePartSys;
     private ParticleSystem trailPartSys;
 
@@ -41,12 +41,8 @@ public class PlayerController : MonoBehaviour {
         kicksLeft = maxNumKicks;
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-    }
 
-    public void setPlayerNum(int i)
-    {
-        playerNum = i;
-        feet = GameObject.Find("Feet" + i);
+        Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feet.GetComponent<CircleCollider2D>());
     }
 	
 	// Update is called once per frame
@@ -58,7 +54,7 @@ public class PlayerController : MonoBehaviour {
 
         Vector2 rightStick = new Vector2(Input.GetAxis("Right Stick X Axis P" + playerNum), Input.GetAxis("Right Stick Y Axis P" + playerNum));
 
-        if (rightStick.magnitude > 0.75)
+        if (rightStick.magnitude > 0.75 && kicksLeft > 0)
         {  
             kickForce = rightStick.normalized;
 
@@ -93,38 +89,29 @@ public class PlayerController : MonoBehaviour {
         }
 
 
-        if (feet)
+
+        feet.transform.position = transform.position;
+
+        CircleCollider2D footCollider = feet.GetComponent<CircleCollider2D>();
+        if (kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0)
         {
-            feet.transform.position = transform.position;
-
-            BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();
-            if (kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0)
-            {
-                trailPartSys.enableEmission = true;
+            trailPartSys.enableEmission = true;
 
 
-                kickDuration -= Time.deltaTime;
-                footCollider.enabled = true;
-                footCollider.offset = playerRB.velocity.normalized * .5f;
-            }
-            else
-            {
-                trailPartSys.enableEmission = false;
+            kickDuration -= Time.deltaTime;
+            footCollider.offset = playerRB.velocity.normalized * .5f;
+        }
+        else
+        {
+            trailPartSys.enableEmission = false;
 
-                footCollider.enabled = false;
-                kicking = false;
-            }
+            footCollider.offset = Vector2.zero;
+            kicking = false;
         }
 
         //This is apparently deprecated now but how the hell else do you set emission rate when emission.rate is read-only       
         chargePartSys.emissionRate = (60*chargeKickTimer / chargeLength);
 
-        /* Previous method
-        if (chargeKickTimer >= chargeLength)
-            chargePartSys.startColor = new Color(1, 0.5f, 0.25f, 1);
-        else
-            chargePartSys.startColor = Color.yellow;
-        */
         chargePartSys.startColor = new Color(1, 1f / (chargeKickTimer * 2), 0.25f, 1);
         chargePartSys.startSpeed = 1 + (chargeKickTimer / 2f);
     }
@@ -149,15 +136,14 @@ public class PlayerController : MonoBehaviour {
 
     }
 
-    void Die()
+    public void Deflect(Vector3 otherPos)
     {
-        transform.position = new Vector3(0,5,0);
-        playerRB.velocity = Vector2.zero;
+        playerRB.velocity *= -.8f;
+    }
 
-        kicksLeft = maxNumKicks;
-        kicking = false;
-
-        livesLeft--;
+    public void Die()
+    {
+        gm.killPlayer(playerNum - 1);
 
     }
 
@@ -170,15 +156,5 @@ public class PlayerController : MonoBehaviour {
             kicking = false;
         }
     }
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        //If you collide with feet and they're not your own, you died
-        if(other.gameObject.tag == "Feet" && other.gameObject.name != feet.name)
-        {
-            gm.killPlayer(playerNum-1);
-        }
-    }
-
 
 }
