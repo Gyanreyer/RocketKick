@@ -32,6 +32,8 @@ public class PlayerController : MonoBehaviour {
 
     private GameManager gm;
 
+    public bool deflecting;
+
 	// Use this for initialization
 	void Start () {
         playerRB = GetComponent<Rigidbody2D>();
@@ -42,7 +44,7 @@ public class PlayerController : MonoBehaviour {
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
 
-        Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feet.GetComponent<CircleCollider2D>());
+        Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feet.GetComponent<BoxCollider2D>());
     }
 	
 	// Update is called once per frame
@@ -92,7 +94,7 @@ public class PlayerController : MonoBehaviour {
 
         feet.transform.position = transform.position;
 
-        CircleCollider2D footCollider = feet.GetComponent<CircleCollider2D>();
+        BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();
         if (kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0)
         {
             trailPartSys.enableEmission = true;
@@ -136,11 +138,6 @@ public class PlayerController : MonoBehaviour {
 
     }
 
-    public void Deflect(Vector3 otherPos)
-    {
-        playerRB.velocity *= -.8f;
-    }
-
     public void Die()
     {
         gm.killPlayer(playerNum - 1);
@@ -153,8 +150,40 @@ public class PlayerController : MonoBehaviour {
         if(other.gameObject.tag == "Floor")
         {
             kicksLeft = maxNumKicks;
-            kicking = false;
         }
+    }
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "Feet")
+        {
+            //Checks if should reflect, if not then just die
+            if (CheckDeflect(other.gameObject.GetComponent<Feet>().playerBody))
+            {
+                playerRB.velocity *= -.8f;
+                other.gameObject.GetComponent<Rigidbody2D>().velocity *= -.8f;
+                deflecting = true;
+            }
+            else
+            {
+                Die();
+            }
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "Feet")
+        {
+            deflecting = false;
+        }
+    }
+
+    public bool CheckDeflect(GameObject otherPlayer)
+    {
+        //Returns true if velocities are significantly in opposite directions or other player is already deflecting
+        return Vector2.Dot(playerRB.velocity.normalized, otherPlayer.GetComponent<Rigidbody2D>().velocity.normalized) < -0.3f ||
+            otherPlayer.GetComponent<PlayerController>().deflecting;
     }
 
 }

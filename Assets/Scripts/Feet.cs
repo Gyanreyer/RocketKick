@@ -8,25 +8,12 @@ public class Feet : MonoBehaviour {
 
     void OnDrawGizmos()
     {
-        CircleCollider2D bc = GetComponent<CircleCollider2D>();
+        BoxCollider2D bc = GetComponent<BoxCollider2D>();
 
         Vector3 offset = new Vector3(bc.offset.x,bc.offset.y,0);
 
         Gizmos.color = Color.white;
-        Gizmos.DrawWireSphere(transform.position + offset/2, bc.radius/2);
+        Gizmos.DrawWireCube(transform.position + offset/2, new Vector3(bc.size.x/2,bc.size.y/2,1));
     }
 
-    void OnCollisionEnter2D(Collision2D other)
-    {
-        if(other.gameObject.tag == "Feet")
-        {
-            Debug.Log("Hello");
-            playerBody.GetComponent<PlayerController>().Deflect(other.transform.position);
-        }
-        else if(other.gameObject.tag == "Player")
-        {
-            other.gameObject.GetComponent<PlayerController>().Die();
-        }
-
-    }
 }
