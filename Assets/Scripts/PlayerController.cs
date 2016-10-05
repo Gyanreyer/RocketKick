@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour {
     public GameObject feet;
     private ParticleSystem chargePartSys;
     private ParticleSystem trailPartSys;
+    private GameObject directionIndicator;
 
     private GameManager gm;
 
@@ -44,15 +45,16 @@ public class PlayerController : MonoBehaviour {
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
 
+        directionIndicator = transform.FindChild("DirectionIndicator").gameObject;
+        directionIndicator.SetActive(false);
+
         Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feet.GetComponent<BoxCollider2D>());
     }
 	
 	// Update is called once per frame
 	void Update () {
 
-        //Get input from left stick and move position's x axis accordingly
-       // transform.position += new Vector3(Input.GetAxis("Left Stick X Axis P" + playerNum) * movementSpeed*Time.deltaTime,0,0);
-        
+        //Get input from left stick and move position's x axis accordingly       
 
         Vector2 rightStick = new Vector2(Input.GetAxis("Right Stick X Axis P" + playerNum), Input.GetAxis("Right Stick Y Axis P" + playerNum));
 
@@ -65,6 +67,8 @@ public class PlayerController : MonoBehaviour {
                 chargeKickTimer += Time.deltaTime;
             }
 
+            directionIndicator.SetActive(true);
+            directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y,rightStick.x))-90);
         }
         else if(kickForce.sqrMagnitude > 0 && !timeToKick)
         {
@@ -82,7 +86,9 @@ public class PlayerController : MonoBehaviour {
             kicking = true;
 
             kicksLeft--;
-            
+
+            directionIndicator.SetActive(false);
+
         }
 
         if(transform.position.y < -7)
@@ -109,6 +115,7 @@ public class PlayerController : MonoBehaviour {
 
             footCollider.offset = Vector2.zero;
             kicking = false;
+
         }
 
         //This is apparently deprecated now but how the hell else do you set emission rate when emission.rate is read-only       
