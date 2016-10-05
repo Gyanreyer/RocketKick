@@ -116,7 +116,7 @@ public class GameManager : MonoBehaviour {
                 activePlayers[i] = p.transform.FindChild("Player").gameObject;
                 activePlayers[i].name = "Player" + number;
                 activePlayers[i].GetComponent<MeshRenderer>().material = skins[i];
-                activePlayers[i].GetComponent<PlayerController>().setPlayerNum(number);
+                activePlayers[i].GetComponent<PlayerController>().playerNum = number;
 
                 GameObject.Find("P" + number + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
                 GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Alive!";
