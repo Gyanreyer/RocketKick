@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000013405654028}
   - 212: {fileID: 212000013507103006}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -52,7 +52,7 @@ GameObject:
   - 4: {fileID: 4000013024357890}
   - 198: {fileID: 198000012141662492}
   - 199: {fileID: 199000011538844052}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PartSys
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -67,7 +67,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 4000012303414240}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: DirectionIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -89,7 +89,7 @@ GameObject:
   - 61: {fileID: 61000012954002802}
   - 199: {fileID: 199000011667500318}
   - 198: {fileID: 198000011164033828}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   - 114: {fileID: 114000013676926970}
   - 50: {fileID: 50000013859689334}
   - 61: {fileID: 61000011789182862}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Feet
   m_TagString: Feet
   m_Icon: {fileID: 0}

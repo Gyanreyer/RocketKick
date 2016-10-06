@@ -211,6 +211,10 @@ Prefab:
       propertyPath: m_Name
       value: Spawn Point (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 66d5da75762812044986d37afe7de49b, type: 2}
   m_IsPrefabParent: 0
@@ -470,6 +474,10 @@ Prefab:
       propertyPath: m_TagString
       value: Spawn Point
       objectReference: {fileID: 0}
+    - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 66d5da75762812044986d37afe7de49b, type: 2}
   m_IsPrefabParent: 0
@@ -586,6 +594,10 @@ Prefab:
     - target: {fileID: 4000010077027638, guid: 443439ef26b69b5498472d5358665c65, type: 2}
       propertyPath: m_LocalScale.x
       value: 20.000008
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000013918572742, guid: 443439ef26b69b5498472d5358665c65, type: 2}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 443439ef26b69b5498472d5358665c65, type: 2}
@@ -707,6 +719,10 @@ Prefab:
     - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
       propertyPath: m_Name
       value: Spawn Point (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 66d5da75762812044986d37afe7de49b, type: 2}
@@ -1011,7 +1027,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967039
+    m_Bits: 4294966271
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -1226,6 +1242,10 @@ Prefab:
     - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
       propertyPath: m_Name
       value: Spawn Point (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 66d5da75762812044986d37afe7de49b, type: 2}
@@ -1562,6 +1582,10 @@ Prefab:
       propertyPath: m_Name
       value: Spawn Point (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1000010299226678, guid: 66d5da75762812044986d37afe7de49b, type: 2}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 66d5da75762812044986d37afe7de49b, type: 2}
   m_IsPrefabParent: 0
@@ -1576,7 +1600,7 @@ GameObject:
   - 33: {fileID: 1926291412}
   - 23: {fileID: 1926291411}
   - 61: {fileID: 1926291410}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cube (2)
   m_TagString: Floor
   m_Icon: {fileID: 0}

@@ -99,11 +99,11 @@ public class PlayerController : MonoBehaviour {
                     directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
                 }
 
-                float vibrationPower = .1f + .15f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
+                float vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
 
                 if (chargeKickTimer > chargeLength)
                 {
-                    vibrationPower += .3f;
+                    vibrationPower += .1f;
                 }
 
                 GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
@@ -145,7 +145,7 @@ public class PlayerController : MonoBehaviour {
 
             if (chargeKickTimer == 0)
             {
-                float vibrationPower = .2f * kickDuration / chargeLength;
+                float vibrationPower = .1f * kickDuration / chargeLength;
                 GamePad.SetVibration(index, vibrationPower, vibrationPower);
             }
 
@@ -179,6 +179,16 @@ public class PlayerController : MonoBehaviour {
         {
             chargePartSys.startColor = new Color(1,0.25f,.25f);
             chargePartSys.startSize = .3f;
+        }
+
+
+        if(playerRB.velocity.y > 0)
+        {
+            gameObject.layer = 9;
+        }
+        else
+        {
+            gameObject.layer = 8;
         }
     }
 
