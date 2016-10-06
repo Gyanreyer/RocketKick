@@ -2,8 +2,18 @@
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using XInputDotNetPure;
 
 public class GameManager : MonoBehaviour {
+
+    //Struct for player, need to migrate over to just using one array with these for each player
+    struct Player
+    {
+        int score;
+        GameObject body;
+        PlayerController controller;
+        bool alive;
+    };
 
     public GameObject playerPrefab;
 
@@ -117,6 +127,7 @@ public class GameManager : MonoBehaviour {
                 activePlayers[i].name = "Player" + number;
                 activePlayers[i].GetComponent<MeshRenderer>().material = skins[i];
                 activePlayers[i].GetComponent<PlayerController>().playerNum = number;
+                activePlayers[i].GetComponent<PlayerController>().index = (PlayerIndex)i;
 
                 GameObject.Find("P" + number + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
                 GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Alive!";
@@ -126,16 +137,15 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void killPlayer(int index)
+    public void killPlayer(int number)
     {
         playersAlive--;
 
-        int number = index + 1;
         GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
 
 
-        Destroy(activePlayers[index].transform.parent.gameObject);
-        activePlayers[index] = null;
+        Destroy(activePlayers[number-1].transform.parent.gameObject);
+        activePlayers[number-1] = null;
 
         //If only one player left, increase that player's score and then respawn for next round
         if (playersAlive == 1)
@@ -146,13 +156,13 @@ public class GameManager : MonoBehaviour {
                 {
                     GameObject.Find("P" + (i+1) + "Text").GetComponent<Text>().text = "Player " + (i+1) + " : Winner!";
                     playerScores[i]++;
-                    Destroy(activePlayers[i].transform.parent.gameObject,1);
+                    Destroy(activePlayers[i].transform.parent.gameObject,2f);
                     activePlayers[i] = null;
                     break;
                 }
             }
 
-            Invoke("spawnPlayers",1.5f);
+            Invoke("spawnPlayers",2.1f);
         }
         
     }
