@@ -316,6 +316,7 @@ MonoBehaviour:
   livesLeft: 5
   feet: {fileID: 1000013961746896}
   deflecting: 0
+  triggerAttack: 0
 --- !u!114 &114000013676926970
 MonoBehaviour:
   m_ObjectHideFlags: 1

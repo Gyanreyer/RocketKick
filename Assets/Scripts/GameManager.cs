@@ -2,6 +2,7 @@
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using XInputDotNetPure;
 
 public class GameManager : MonoBehaviour {
 
@@ -126,16 +127,15 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void killPlayer(int index)
+    public void killPlayer(int number)
     {
         playersAlive--;
 
-        int number = index + 1;
         GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
 
 
-        Destroy(activePlayers[index].transform.parent.gameObject);
-        activePlayers[index] = null;
+        Destroy(activePlayers[number-1].transform.parent.gameObject);
+        activePlayers[number-1] = null;
 
         //If only one player left, increase that player's score and then respawn for next round
         if (playersAlive == 1)

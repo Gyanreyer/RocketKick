@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using XInputDotNetPure;
 
 public class PlayerController : MonoBehaviour {
 
@@ -35,6 +36,10 @@ public class PlayerController : MonoBehaviour {
 
     public bool deflecting;
 
+    public bool triggerAttack;
+
+    private float vibrationDuration = 0;
+
 	// Use this for initialization
 	void Start () {
         playerRB = GetComponent<Rigidbody2D>();
@@ -54,49 +59,74 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        //Get input from left stick and move position's x axis accordingly       
+        if (Input.GetButtonDown("A Button P" + playerNum))
+            triggerAttack = !triggerAttack;
 
-        Vector2 rightStick = new Vector2(Input.GetAxis("Right Stick X Axis P" + playerNum), Input.GetAxis("Right Stick Y Axis P" + playerNum));
-
-        if (rightStick.magnitude > 0.75 && kicksLeft > 0)
-        {  
-            kickForce = rightStick.normalized;
-
-            if (chargeKickTimer < chargeLength)
-            {
-                chargeKickTimer += Time.deltaTime;
-            }
-
-            directionIndicator.SetActive(true);
-            directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y,rightStick.x))-90);
-        }
-        else if(kickForce.sqrMagnitude > 0 && !timeToKick)
+        if(kicksLeft > 0)
         {
-            float kickMagnitude = (chargeKickTimer / chargeLength) * maxKick;
+            Vector2 rightStick = new Vector2(Input.GetAxis("Right Stick X Axis P" + playerNum), Input.GetAxis("Right Stick Y Axis P" + playerNum));
+        
+            if ((triggerAttack && Input.GetAxis("Right Trigger P"+playerNum) > 0) || (!triggerAttack && rightStick.magnitude > 0.75))
+            {
+                kickForce = rightStick.normalized;
 
-            if (kickMagnitude < minKick)
-                kickMagnitude = minKick;
+                if (chargeKickTimer < chargeLength)
+                {
+                    chargeKickTimer += Time.deltaTime;
+                }
 
-            kickDuration = chargeKickTimer;
+                if (kickForce.sqrMagnitude > 0)
+                {
+                    directionIndicator.SetActive(true);
+                    directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
+                }
+            }
+            else if (kickForce.sqrMagnitude > 0 && !timeToKick)
+            {
+                float kickMagnitude = (chargeKickTimer / chargeLength) * maxKick;
 
-            kickForce *= kickMagnitude;
-            chargeKickTimer = 0;
+                if (kickMagnitude < minKick)
+                    kickMagnitude = minKick;
 
-            timeToKick = true;
-            kicking = true;
+                kickDuration = chargeKickTimer;
 
-            kicksLeft--;
+                kickForce *= kickMagnitude;
+                
 
-            directionIndicator.SetActive(false);
+                timeToKick = true;
+                kicking = true;
 
+                kicksLeft--;
+
+                directionIndicator.SetActive(false);
+
+                float vibrationPower = .25f+.7f * chargeKickTimer / chargeLength;
+
+                GamePad.SetVibration((PlayerIndex)playerNum, vibrationPower, vibrationPower);
+                vibrationDuration = .1f+chargeKickTimer*.25f;
+
+                chargeKickTimer = 0;
+            }
+            else
+            {
+                chargeKickTimer = 0;
+            }
         }
 
         if(transform.position.y < -7)
         {
-            transform.position = new Vector3(0, -3, 0);
+            gm.killPlayer(playerNum);
         }
 
-
+        if(vibrationDuration > 0)
+        {
+            vibrationDuration -= Time.deltaTime;
+        }
+        else
+        {
+            vibrationDuration = 0;
+            GamePad.SetVibration((PlayerIndex)playerNum,0,0);
+        }
 
         feet.transform.position = transform.position;
 
@@ -128,8 +158,9 @@ public class PlayerController : MonoBehaviour {
     //Fixed update for physics stuff
     void FixedUpdate()
     {
+        float moveSpeedModifier = playerRB.velocity.magnitude > 1 ? 1f : 10f;
 
-        playerRB.AddForce(new Vector2(Input.GetAxis("Left Stick X Axis P" + playerNum) * (Mathf.Abs(playerRB.velocity.magnitude) > 1? movementSpeed:movementSpeed*10), 0));
+        playerRB.AddForce(new Vector2(Input.GetAxis("Left Stick X Axis P" + playerNum) * movementSpeed*moveSpeedModifier, 0));
 
         if (timeToKick && kicksLeft > 0)
         {
@@ -145,10 +176,15 @@ public class PlayerController : MonoBehaviour {
 
     }
 
+    void StopVibrating()
+    {
+        GamePad.SetVibration((PlayerIndex)playerNum,0,0);
+    }
+
     public void Die()
     {
-        gm.killPlayer(playerNum - 1);
-
+        GamePad.SetVibration((PlayerIndex)playerNum, 0, 0);
+        gm.killPlayer(playerNum);
     }
 
 
