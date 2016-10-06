@@ -39,10 +39,6 @@ public class PlayerController : MonoBehaviour {
 
     private bool triggerAttack = false;//Whether to use attack controls with holding trigger, very experimental but can be toggled by pressing A when you spawn
 
-    private float vibrationDuration = 0;//Duration of controller vibration, longer for harder kicks and counts down to 0
-                                        //IMPORTANT TO NOTE: if you use GamePad.SetVibration() you HAVE to set it back to 0 in the code somewhere, otherwise
-                                        //controller will literally keep vibrating and never stop until you unplug it - even after game is closed
-
     private GamePadState gpState;//State of gamepad each frame, used to get input
     private GamePadState prevGpState;
     public PlayerIndex index;//Controller index of player
@@ -102,6 +98,16 @@ public class PlayerController : MonoBehaviour {
                     directionIndicator.SetActive(true);
                     directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
                 }
+
+                float vibrationPower = .1f + .15f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
+
+                if (chargeKickTimer > chargeLength)
+                {
+                    vibrationPower += .3f;
+                }
+
+                GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
+
             }
             //If not getting charge input and kickforce hasn't been reset, that means it's been released and it's time to kick!
             else if (kickForce.sqrMagnitude > 0 && !timeToKick)
@@ -119,24 +125,8 @@ public class PlayerController : MonoBehaviour {
 
                 directionIndicator.SetActive(false);//Hide direction indicator
 
-                float vibrationPower = .2f+.5f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
-                vibrationDuration = chargeKickTimer * .1f;//Duration for which controller will vibrate, counts down to 0 and then sets vibration to 0
-
-                GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
-
                 chargeKickTimer = 0;//Reset charge kick timer
             }
-        }
-
-        //Count down vibration duration, turn off vibration when it hits 0
-        if(vibrationDuration > 0)
-        {
-            vibrationDuration -= Time.deltaTime;
-        }
-        else
-        {
-            vibrationDuration = 0;
-            GamePad.SetVibration(index,0,0);
         }
 
         //Keep feet at same position as body, will offset its collider based on kick direction
@@ -152,6 +142,13 @@ public class PlayerController : MonoBehaviour {
 
             kickDuration -= Time.deltaTime;//Decrement kick duration
             footCollider.offset = playerRB.velocity.normalized * .5f;//Offset foot collider
+
+            if (chargeKickTimer == 0)
+            {
+                float vibrationPower = .2f * kickDuration / chargeLength;
+                GamePad.SetVibration(index, vibrationPower, vibrationPower);
+            }
+
         }
         //Otherwise disable kick and hide relevant stuff
         else
@@ -161,6 +158,9 @@ public class PlayerController : MonoBehaviour {
             
             footCollider.offset = Vector2.zero;
             footCollider.enabled = false;
+
+            if(chargeKickTimer == 0)
+                GamePad.SetVibration(index, 0,0);
         }
    
         //Set charge particle system emission rate based on charge - apparently C# has vars and this is the new way to set emission rate, not gonna question
@@ -169,9 +169,17 @@ public class PlayerController : MonoBehaviour {
         rate.constantMax = (60 * chargeKickTimer / chargeLength);
         emission.rate = rate;
 
-        //Set color and speed of particles based on charge
-        chargePartSys.startColor = new Color(1, 1f / (chargeKickTimer * 2), 0.25f, 1);
+        //Set color, speed, and size of particles based on charge
+        chargePartSys.startColor = new Color(1, 1f / chargeKickTimer, 0.25f);
         chargePartSys.startSpeed = 1 + (chargeKickTimer / 2f);
+        chargePartSys.startSize = .1f + .1f * (chargeKickTimer/chargeLength);
+
+        //Visually indicate when reached full charge w/ color and size change
+        if (chargeKickTimer > chargeLength)
+        {
+            chargePartSys.startColor = new Color(1,0.25f,.25f);
+            chargePartSys.startSize = .3f;
+        }
     }
 
     //Fixed update for physics stuff
@@ -260,13 +268,13 @@ public class PlayerController : MonoBehaviour {
     //Deflect this player
     public void Deflect()
     {
+        float vibrationPower = playerRB.velocity.magnitude / maxSpeed;//Set power of vibration based on how fast was going
+        GamePad.SetVibration(index, vibrationPower, vibrationPower);
+
         playerRB.velocity *= -.8f;//Mirror velocity w/ 20% speed loss
         deflecting = true;//Set deflecting to true so no accidental killings after velocities are flipped
         lastKickDirection *= -1;//Mirror last kick direction so keep kicking
 
-        float vibrationPower = playerRB.velocity.magnitude / maxSpeed;//Set power/duration of vibration based on how fast was going
-        vibrationDuration = vibrationPower * .2f;
-
-        GamePad.SetVibration(index, vibrationPower, vibrationPower);
+        
     }
 }
