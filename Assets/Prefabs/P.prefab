@@ -307,16 +307,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerNum: 1
-  movementSpeed: 10
-  chargeLength: 2
-  maxKick: 10
-  minKick: 3
+  movementForce: 8
+  maxSpeed: 15
   maxNumKicks: 3
-  maxForce: 10
-  livesLeft: 5
+  chargeLength: 2
+  maxKick: 15
+  minKick: 3
   feet: {fileID: 1000013961746896}
-  deflecting: 0
-  triggerAttack: 0
+  index: 0
 --- !u!114 &114000013676926970
 MonoBehaviour:
   m_ObjectHideFlags: 1
