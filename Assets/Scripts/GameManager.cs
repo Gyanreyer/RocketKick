@@ -2,13 +2,14 @@
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using XInputDotNetPure;
 
 public class GameManager : MonoBehaviour {
 
     public GameObject playerPrefab;
 
-    bool[] players = new bool[4];
-    public int playerCount = 0;
+    //Dictionary<int,Player> players;
+    List<Player> players;
 
     private int playersAlive = 0;
 
@@ -16,10 +17,7 @@ public class GameManager : MonoBehaviour {
 
     public Material[] skins = new Material[4];
 
-    private GameObject[] activePlayers = new GameObject[4];
-    int[] playerScores = new int[4];
-
-    public GameObject[] spawnPoints;    //assigned in the FindSpawnpoints() method
+    public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
 
     // Initialization, executes before Start()
     void Awake () {
@@ -38,6 +36,7 @@ public class GameManager : MonoBehaviour {
             promptText.SetActive(false);
         }
 
+        players = new List<Player>(4);
     }
 
     // Update is called once per frame
@@ -46,31 +45,35 @@ public class GameManager : MonoBehaviour {
         //If on main menu, get active controllers
         if (SceneManager.GetActiveScene().buildIndex == 0)
         {
+            GamePadState gpState;
 
             for (int i = 0; i < 4; i++)
             {
-                if (Input.GetButtonDown("Start Button P" + (i + 1)) && !players[i])
+                gpState = GamePad.GetState((PlayerIndex)i);
+
+                if (gpState.Buttons.Start == ButtonState.Pressed && !players.Exists(p => p.Index == i))
                 {
-                    players[i] = true;
-                    playerCount++;
+                    players.Add(new Player(i,playerPrefab,skins[i]));
 
                     GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!";
                 }
 
-                if (playerCount > 1 && Input.GetButtonDown("A Button P" + (i + 1)))
+                if (players.Count > 1 && Input.GetButtonDown("A Button P" + (i + 1)))
                 {
                     loadScene(1);
                 }
             }
             
             //When more than one person is ready, you can start game
-            if (playerCount > 1)
+            if (players.Count > 1)
             {
                 promptText.SetActive(true);
             }
         }
+
         
-	}
+
+    }
 
     /// <summary>
     /// Used for the dynamic camera to get the locations of the player objects
@@ -97,76 +100,55 @@ public class GameManager : MonoBehaviour {
 
         int spawnIndex = 0;
 
-        playersAlive = 0;
-
-        for(int i = 0; i < 4; i++)
+        for (int i = 0; i < players.Count; i++)
         {
-            if(players[i])
+            //Finding a good spawnpoint
+            spawnIndex = (int)Random.Range(0, spawnPoints.Length - 1);//used to get a random spawnpoint... we can change this later if you guys don't like random spawns
+            do
             {
-                int number = i + 1;
+                if (++spawnIndex >= spawnPoints.Length)
+                    spawnIndex = 0;
+            } while (spawnsUsed[spawnIndex]);
+            //Set spawn to used
+            spawnsUsed[spawnIndex] = true;
 
-                GameObject p = Instantiate(playerPrefab);
-                p.name = "P" + number;
-                p.transform.FindChild("Feet").name = "Feet"+number;
+            int pNum = players[i].PlayerNum;
 
-                //Finding a good spawnpoint
-                spawnIndex = (int)Random.Range(0, spawnPoints.Length - 1);//used to get a random spawnpoint... we can change this later if you guys don't like random spawns
-                do
-                {
-                    ++spawnIndex;
-                    if (spawnIndex >= spawnPoints.Length)
-                        spawnIndex = 0;
-                } while (spawnsUsed[spawnIndex]);
-                //Set spawn to used
-                spawnsUsed[spawnIndex] = true;
-                //Udpate position based on that spawnpoint
-                p.transform.position = spawnPoints[spawnIndex].transform.position;
-
-                activePlayers[i] = p.transform.FindChild("Player").gameObject;
-                activePlayers[i].name = "Player" + number;
-                activePlayers[i].GetComponent<MeshRenderer>().material = skins[i];
-                activePlayers[i].GetComponent<PlayerController>().setPlayerNum(number);
-
-                GameObject.Find("P" + number + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
-                GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Alive!";
-
-                playersAlive++;
-            }
+            players[i].SpawnNewPlayer(spawnPoints[spawnIndex].transform.position);  
+            
+            GameObject.Find("P" + pNum + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
+            GameObject.Find("P" + pNum + "Text").GetComponent<Text>().text = "Player " + pNum + " : Alive!";
+    
         }
-        GiveAlivePlayersToCamera();
+//        GiveAlivePlayersToCamera();
     }
 
-    public void killPlayer(int index)
+    public void killPlayer(int number)
     {
+        players.Find(p => p.PlayerNum == number).Die();
+
         playersAlive--;
 
-        int number = index + 1;
         GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
-
-
-        Destroy(activePlayers[index].transform.parent.gameObject);
-        activePlayers[index] = null;
-
-        GiveAlivePlayersToCamera();
-
+//        GiveAlivePlayersToCamera();
         //If only one player left, increase that player's score and then respawn for next round
         if (playersAlive == 1)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < players.Count; i++)
             {
-                if (activePlayers[i])
+                if (players[i].Alive)
                 {
-                    GameObject.Find("P" + (i+1) + "Text").GetComponent<Text>().text = "Player " + (i+1) + " : Winner!";
-                    playerScores[i]++;
-                    Destroy(activePlayers[i].transform.parent.gameObject,1);
-                    activePlayers[i] = null;
-                    break;
+                    GameObject.Find("P" + (i + 1) + "Text").GetComponent<Text>().text = "Player " + (i + 1) + " : Winner!";
+                    players[i].WinRound();
                 }
             }
 
-            Invoke("spawnPlayers",1.5f);
+            Invoke("spawnPlayers", 2.1f);
         }
-        
+
+
+
+
     }
 
     /// <summary>
