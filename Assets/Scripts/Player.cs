@@ -76,4 +76,9 @@ public class Player : MonoBehaviour
         alive = false;
     }
 
+    public void resetScore()
+    {
+        this.score = 0;
+    }
+
 }

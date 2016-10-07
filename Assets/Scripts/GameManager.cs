@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     List<Player> players;
 
     private int playersAlive = 0;
+    public int MAX_SCORE = 5;
 
     GameObject promptText;
 
@@ -59,6 +60,7 @@ public class GameManager : MonoBehaviour
             if (players.Count > 1 && Input.GetButtonDown("A Button"))
             {
                 loadScene(1);
+                ResetPlayerScores();
             }
 
             for (int i = 0; i < 4; i++)
@@ -84,8 +86,23 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        foreach(Player p in players)
+        {
+            if(p.Score >= MAX_SCORE)
+            {
+                //ResetPlayerScores();
+                loadScene(0);
+            }
+        }
 
+    }
 
+    public void ResetPlayerScores()
+    {
+        foreach(Player p in players)
+        {
+            p.resetScore();
+        }
     }
 
     /// <summary>
@@ -130,7 +147,7 @@ public class GameManager : MonoBehaviour
             players[i].SpawnNewPlayer(spawnPoints[spawnIndex].transform.position);
 
             GameObject.Find("P" + pNum + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
-            GameObject.Find("P" + pNum + "Text").GetComponent<Text>().text = "Player " + pNum + " : Alive!";
+            GameObject.Find("P" + pNum + "Text").GetComponent<Text>().text = "Player " + pNum + " : Score " + players[i].Score;
 
         }
 
