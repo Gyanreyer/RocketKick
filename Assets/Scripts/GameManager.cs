@@ -75,6 +75,15 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Used for the dynamic camera to get the locations of the player objects
+    /// </summary>
+    /// <returns></returns>
+    public GameObject[] getActivePlayers()
+    {
+        return activePlayers;
+    }
+
     public void loadScene(int i)
     {
         SceneManager.LoadScene(i);
@@ -111,8 +120,7 @@ public class GameManager : MonoBehaviour {
             GameObject.Find("P" + pNum + "Text").GetComponent<Text>().text = "Player " + pNum + " : Alive!";
     
         }
-
-        playersAlive = players.Count;
+//        GiveAlivePlayersToCamera();
     }
 
     public void killPlayer(int number)
@@ -122,7 +130,7 @@ public class GameManager : MonoBehaviour {
         playersAlive--;
 
         GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
-
+//        GiveAlivePlayersToCamera();
         //If only one player left, increase that player's score and then respawn for next round
         if (playersAlive == 1)
         {
@@ -141,6 +149,27 @@ public class GameManager : MonoBehaviour {
 
 
 
+    }
+
+    /// <summary>
+    /// Gives the camera an array of alive players
+    /// </summary>
+    void GiveAlivePlayersToCamera()
+    {
+        if (playersAlive == 0)
+            return; //this here is to catch the whole "OnLevelWasLoaded" getting called twice thing
+                    //more info here:http://answers.unity3d.com/questions/466880/is-onlevelwasloaded-supposed-to-be-called-twice-wh.html
+        GameObject[] alivePlayerObjects = new GameObject[playersAlive];
+        int alivePlayerCounter = 0;
+        for (int i = 0; i < activePlayers.Length; ++i)
+        {
+            if (activePlayers[i] != null) 
+            {
+                alivePlayerObjects[alivePlayerCounter] = activePlayers[i];
+                ++alivePlayerCounter;
+            }
+        }
+        Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);
     }
 
 
