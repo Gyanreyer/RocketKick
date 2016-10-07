@@ -1162,7 +1162,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &940568753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1176,7 +1176,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 1000011200174458, guid: 3a1aa1fc56a3fc843a9c89cfff1f86bf,
     type: 2}
-  playerCount: 0
   skins:
   - {fileID: 0}
   - {fileID: 0}

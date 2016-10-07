@@ -43,6 +43,13 @@ public class PlayerController : MonoBehaviour {
     private GamePadState prevGpState;
     public PlayerIndex index;//Controller index of player
 
+    //Set player's number and index
+    public void SetNum(int ind)
+    {
+        index = (PlayerIndex)ind;
+        playerNum = ind+1;
+    }
+
 	// Use this for initialization
 	void Start () {
 
@@ -242,7 +249,7 @@ public class PlayerController : MonoBehaviour {
         {
             if (deflecting) return;//Return early if already marked as deflecting
 
-            GameObject otherPlayerBody = other.gameObject.GetComponent<Feet>().playerBody;//Get other player's GO
+            GameObject otherPlayerBody = other.gameObject.GetComponent<Feet>().playerBody;//Get other player's GO from Feet script
 
             //Check if should deflect
             if (CheckDeflect(otherPlayerBody))

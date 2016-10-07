@@ -5,54 +5,72 @@ using XInputDotNetPure;
 public class Player : MonoBehaviour {
 
     private int score;//Score for number of rounds won
-    private GameObject body;//GameObject for player's body
+    private GameObject mainObject;//GameObject for player's body
     private PlayerController controller;//Controller script for player
     private bool alive;//Whether player is alive and accessible
-    public bool inGame;
 
-    private int index;
+    private int index;//Index for player
 
+    private GameObject prefab;//Prefab to spawn instances of
+    private Material skin;//Material for player
+
+    //Properties
     public int Score { get { return score; } }
-    public GameObject Body { get { return body; } }
+    public GameObject GO { get { return mainObject; } }
     public PlayerController Controller { get { return controller; } }
     public bool Alive { get { return alive; } }
     public int Index { get { return index; } }
+    public int PlayerNum { get { return index + 1; } }
 
-    public Player(int ind)
+    //Constructor sets things up
+    public Player(int ind, GameObject pb, Material mat)
     {
         index = ind;
+        prefab = pb;
+
+        skin = mat;
 
         score = 0;
-
-        body = null;
-        controller = null;
 
         alive = false;
     }
 
+    //Win round by adding to score and then dying on delay
     public void WinRound()
     {
         score++;
+        Die(2);
     }
 
-    public void SpawnNewPlayer(Vector3 spawnPos, GameObject bodyGO)
+    //Spawn a new player given 
+    public void SpawnNewPlayer(Vector3 spawnPos)
     {
-        if (!inGame) return;
+        mainObject = (GameObject)Instantiate(prefab, spawnPos, Quaternion.identity);
+        mainObject.name = "P"+PlayerNum;  
 
-        body = (GameObject)Instantiate(bodyGO, spawnPos, Quaternion.identity);
+        mainObject.transform.FindChild("Player").GetComponent<MeshRenderer>().material = skin;
 
-        controller = body.GetComponent<PlayerController>();
+        for(int i = 0; i < mainObject.transform.childCount; i++)
+        {
+            mainObject.transform.GetChild(i).name += PlayerNum;
+        }
 
-        controller.index = (PlayerIndex)index;
+        controller = mainObject.GetComponentInChildren<PlayerController>();
+        controller.SetNum(index);
 
         alive = true;
     }
 
     public void Die()
     {
-        Destroy(body);
-        body = null;
-        controller = null;
+        Destroy(mainObject);
+
+        alive = false;
+    }
+    
+    public void Die(float delay)
+    {
+        Destroy(mainObject, delay);
 
         alive = false;
     }
