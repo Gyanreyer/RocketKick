@@ -37,8 +37,6 @@ public class PlayerController : MonoBehaviour {
     private bool deflecting;//Whether player is deflecting off other player, this is necessary because otherwise one player can change direction
                             //before other and then other player gets registered as kicking them in the back
 
-    private bool triggerAttack = false;//Whether to use attack controls with holding trigger, very experimental but can be toggled by pressing A when you spawn
-
     private GamePadState gpState;//State of gamepad each frame, used to get input
     private GamePadState prevGpState;
     public PlayerIndex index;//Controller index of player
@@ -78,10 +76,6 @@ public class PlayerController : MonoBehaviour {
 
         prevGpState = gpState;//Store gamepad state from previous frame
         gpState = GamePad.GetState(index);//Get current state of gamepad
-
-        //Toggle trigger controls when press A button
-        if (gpState.Buttons.A == ButtonState.Pressed && prevGpState.Buttons.A != ButtonState.Pressed)
-            triggerAttack = !triggerAttack;
         
         //If can still kick, check for input to see if need to start charging
         if(kicksLeft > 0)
@@ -89,7 +83,7 @@ public class PlayerController : MonoBehaviour {
             Vector2 rightStick = new Vector2(gpState.ThumbSticks.Right.X, gpState.ThumbSticks.Right.Y);//Store x and y of right thumbstick for easy access
         
             //Determine whether input means should be charging - trigger stuff is probably temporary, I'm not a fan
-            if ((triggerAttack && gpState.Triggers.Right > 0) || (!triggerAttack && rightStick.magnitude > 0.75))
+            if (rightStick.magnitude > 0.75)
             {
                 kickForce = rightStick.normalized;//Set direction of kick force as normalized vector of right stick
 
