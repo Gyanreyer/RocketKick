@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using XInputDotNetPure;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
 
     public GameObject playerPrefab;
 
@@ -20,7 +21,8 @@ public class GameManager : MonoBehaviour {
     public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
 
     // Initialization, executes before Start()
-    void Awake () {
+    void Awake()
+    {
         //If there's already a GM in the scene, destroy this one so no duplicates
         if (FindObjectsOfType(GetType()).Length > 1)
         {
@@ -47,23 +49,34 @@ public class GameManager : MonoBehaviour {
         {
             GamePadState gpState;
 
+            if (Input.GetKeyDown(KeyCode.R) && !players.Exists(p => p.Index == 1))
+            {
+                players.Add(new Player(1, playerPrefab, skins[1]));
+
+                GameObject.Find("PlayerStatus" + 2).GetComponent<Text>().text = "Player " + 2 + "\nReady!";
+            }
+
+            if (players.Count > 1 && Input.GetButtonDown("A Button"))
+            {
+                loadScene(1);
+            }
+
             for (int i = 0; i < 4; i++)
             {
                 gpState = GamePad.GetState((PlayerIndex)i);
 
                 if (gpState.Buttons.Start == ButtonState.Pressed && !players.Exists(p => p.Index == i))
                 {
-                    players.Add(new Player(i,playerPrefab,skins[i]));
+
+
+                    players.Add(new Player(i, playerPrefab, skins[i]));
 
                     GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!";
                 }
 
-                if (players.Count > 1 && Input.GetButtonDown("A Button P" + (i + 1)))
-                {
-                    loadScene(1);
-                }
+
             }
-            
+
             //When more than one person is ready, you can start game
             if (players.Count > 1)
             {
@@ -71,7 +84,7 @@ public class GameManager : MonoBehaviour {
             }
         }
 
-        
+
 
     }
 
@@ -79,10 +92,10 @@ public class GameManager : MonoBehaviour {
     /// Used for the dynamic camera to get the locations of the player objects
     /// </summary>
     /// <returns></returns>
-    public GameObject[] getActivePlayers()
+    /*public GameObject[] getActivePlayers()
     {
         return activePlayers;
-    }
+    }*/
 
     public void loadScene(int i)
     {
@@ -114,13 +127,16 @@ public class GameManager : MonoBehaviour {
 
             int pNum = players[i].PlayerNum;
 
-            players[i].SpawnNewPlayer(spawnPoints[spawnIndex].transform.position);  
-            
+            players[i].SpawnNewPlayer(spawnPoints[spawnIndex].transform.position);
+
             GameObject.Find("P" + pNum + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
             GameObject.Find("P" + pNum + "Text").GetComponent<Text>().text = "Player " + pNum + " : Alive!";
-    
+
         }
-//        GiveAlivePlayersToCamera();
+
+        //GiveAlivePlayersToCamera();
+
+        playersAlive = players.Count;
     }
 
     public void killPlayer(int number)
@@ -130,7 +146,9 @@ public class GameManager : MonoBehaviour {
         playersAlive--;
 
         GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
-//        GiveAlivePlayersToCamera();
+
+
+
         //If only one player left, increase that player's score and then respawn for next round
         if (playersAlive == 1)
         {
@@ -154,7 +172,7 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Gives the camera an array of alive players
     /// </summary>
-    void GiveAlivePlayersToCamera()
+    /*void GiveAlivePlayersToCamera()
     {
         if (playersAlive == 0)
             return; //this here is to catch the whole "OnLevelWasLoaded" getting called twice thing
@@ -170,12 +188,12 @@ public class GameManager : MonoBehaviour {
             }
         }
         Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);
-    }
+    }*/
 
 
     void OnLevelWasLoaded(int levelIndex)
     {
-        if(levelIndex != 0)
+        if (levelIndex != 0)
         {
             spawnPlayers();
         }
