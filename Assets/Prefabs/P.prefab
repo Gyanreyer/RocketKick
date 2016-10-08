@@ -309,6 +309,7 @@ MonoBehaviour:
   playerNum: 1
   movementForce: 8
   maxSpeed: 15
+  walkSpeed: 6
   maxNumKicks: 3
   chargeLength: 2
   maxKick: 15

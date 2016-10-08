@@ -11,7 +11,8 @@ public class PlayerController : MonoBehaviour {
 
     public float movementForce;//Magnitude of force applied for moving w/ left stick
     public float maxSpeed;//Maximum magnitude for velocity
-
+    public float walkSpeed;
+        
     //Kicking stuff
     private Vector2 kickForce;//Vector for kick force to apply
     private bool timeToKick;//True if should apply force to kick, false if not
@@ -36,6 +37,8 @@ public class PlayerController : MonoBehaviour {
 
     private bool deflecting;//Whether player is deflecting off other player, this is necessary because otherwise one player can change direction
                             //before other and then other player gets registered as kicking them in the back
+
+    private bool inAir;
 
     private GamePadState gpState;//State of gamepad each frame, used to get input
     private GamePadState prevGpState;
@@ -94,7 +97,7 @@ public class PlayerController : MonoBehaviour {
                 }
 
                 //If the kick force has a direction, draw the direction indicator to visualize it
-                if (kickForce.sqrMagnitude > 0)
+                if (rightStick.sqrMagnitude > 0)
                 {
                     directionIndicator.SetActive(true);
                     directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
@@ -106,6 +109,7 @@ public class PlayerController : MonoBehaviour {
                 {
                     vibrationPower += .1f;
                 }
+
 
                 GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
 
@@ -122,12 +126,15 @@ public class PlayerController : MonoBehaviour {
 
                 timeToKick = true;//Indicate that it's time to apply kick force
 
-                kicksLeft--;//Can do one less kick until reset on ground
-
                 directionIndicator.SetActive(false);//Hide direction indicator
 
                 chargeKickTimer = 0;//Reset charge kick timer
             }
+        }
+        else
+        {
+            kickForce = Vector2.zero;
+            chargeKickTimer = 0;
         }
 
         //Keep feet at same position as body, will offset its collider based on kick direction
@@ -196,11 +203,13 @@ public class PlayerController : MonoBehaviour {
     //Fixed update for physics stuff
     void FixedUpdate()
     {
-        //Magnitude for movement force, get slight boost if player is stationary to get them moving
-        float moveForceMag = movementForce * (playerRB.velocity.magnitude > 1 ? 1f : 10f);
+            //Magnitude for movement force, get slight boost if player is stationary to get them moving
+            float moveForceMag = movementForce * (playerRB.velocity.magnitude > 1 ? 1f : 10f);
 
-        //Add force for left stick movement - I really wish walking could be less floaty, we could try creating our own force/velocity/etc variables but that's something for later
-        playerRB.AddForce(new Vector2(gpState.ThumbSticks.Left.X * moveForceMag, 0));
+            //Add force for left stick movement - I really wish walking could be less floaty, we could try creating our own force/velocity/etc variables but that's something for later
+            playerRB.AddForce(new Vector2(gpState.ThumbSticks.Left.X * moveForceMag, 0));
+
+
 
         //If it's time to kick, apply kick force
         if (timeToKick && kicksLeft > 0)
@@ -211,10 +220,15 @@ public class PlayerController : MonoBehaviour {
 
             timeToKick = false;//No longer time to kick
             kickForce = Vector2.zero;//Reset kick force vector
+
+            if(inAir)
+                kicksLeft--;
         }
 
-        //Clamp velocity within max speed
-        playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity,maxSpeed);
+                
+        //Clamp velocity to walk speed
+        playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kickDuration > 0? maxSpeed:walkSpeed);
+        
 
     }
 
@@ -225,15 +239,7 @@ public class PlayerController : MonoBehaviour {
         gm.killPlayer(playerNum);//Kill this player via the game manager
     }
 
-    //Reset number of kicks left while touching floor - we should change how this works, apparently OnCollisionExit is a thing so use that to
-    //determine if on ground or not?
-    void OnCollisionStay2D(Collision2D other)
-    {
-        if(other.gameObject.tag == "Floor")
-        {
-            kicksLeft = maxNumKicks;
-        }
-    }
+    
 
     //Called when other collider hits this one
     void OnCollisionEnter2D(Collision2D other)
@@ -257,6 +263,11 @@ public class PlayerController : MonoBehaviour {
                 Die();
             }
         }
+        else if (other.gameObject.tag == "Wall" || other.gameObject.tag == "Floor")
+        {
+            inAir = false;
+            kicksLeft = maxNumKicks-1;
+        }
     }
 
     //Called when collider stops colliding with you
@@ -266,6 +277,10 @@ public class PlayerController : MonoBehaviour {
         if(other.gameObject.tag == "Feet")
         {
             deflecting = false;
+        }
+        else if(other.gameObject.tag == "Wall" || other.gameObject.tag == "Floor")
+        {
+            inAir = true;
         }
     }
 

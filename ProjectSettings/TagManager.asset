@@ -8,6 +8,7 @@ TagManager:
   - GM
   - Feet
   - Spawn Point
+  - Wall
   layers:
   - Default
   - TransparentFX

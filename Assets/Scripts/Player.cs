@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using XInputDotNetPure;
+using UnityEngine.UI;
 
 //Basic class for players that stores all relevant info about a given player - GameManager has an array of these
 public class Player : MonoBehaviour
@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     private GameObject prefab;//Prefab to spawn instances of
     private Material skin;//Material for player
 
+    private Text scoreText;
+    private Color textColor;
+
     //Properties
     public int Score { get { return score; } }
     public GameObject GO { get { return mainObject; } }
@@ -24,12 +27,13 @@ public class Player : MonoBehaviour
     public int PlayerNum { get { return index + 1; } }
 
     //Constructor sets things up
-    public Player(int ind, GameObject pb, Material mat)
+    public Player(int ind, GameObject pb, Material mat, Color c)
     {
         index = ind;
         prefab = pb;
 
         skin = mat;
+        textColor = c;
 
         score = 0;
 
@@ -40,12 +44,24 @@ public class Player : MonoBehaviour
     public void WinRound()
     {
         score++;
+
+        scoreText.text = score.ToString();
+
         Die(2);
     }
 
     //Spawn a new player given 
     public void SpawnNewPlayer(Vector3 spawnPos)
     {
+        scoreText = GameObject.Find("P" + PlayerNum + "Text").GetComponent<Text>();
+
+        if (scoreText.color.a == 0)
+        {
+            scoreText.color = new Color(scoreText.color.r, scoreText.color.g, scoreText.color.b, 1f);
+        }
+        
+        scoreText.CrossFadeColor(textColor, .1f, true, true);    
+
         mainObject = (GameObject)Instantiate(prefab, spawnPos, Quaternion.identity);
         mainObject.name = "P" + PlayerNum;
 
@@ -64,9 +80,9 @@ public class Player : MonoBehaviour
 
     public void Die()
     {
-        Destroy(mainObject);
+        Die(0);
 
-        alive = false;
+        scoreText.CrossFadeColor(new Color(textColor.r*.5f,textColor.g*.5f,textColor.b*.5f,.75f), .1f, true, true);
     }
 
     public void Die(float delay)
