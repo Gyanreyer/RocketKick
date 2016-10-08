@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
 
     public Material[] skins = new Material[4];
 
+    public Color[] textColors = new Color[4];
+
     public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
 
     // Initialization, executes before Start()
@@ -52,14 +54,14 @@ public class GameManager : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.R) && !players.Exists(p => p.Index == 1))
             {
-                players.Add(new Player(1, playerPrefab, skins[1]));
+                players.Add(new Player(1, playerPrefab, skins[1],textColors[1]));
 
                 GameObject.Find("PlayerStatus" + 2).GetComponent<Text>().text = "Player " + 2 + "\nReady!";
             }
 
             if (players.Count > 1 && Input.GetButtonDown("A Button"))
             {
-                loadScene(1);
+                loadScene(2);
                 ResetPlayerScores();
             }
 
@@ -70,8 +72,7 @@ public class GameManager : MonoBehaviour
                 if (gpState.Buttons.Start == ButtonState.Pressed && !players.Exists(p => p.Index == i))
                 {
 
-
-                    players.Add(new Player(i, playerPrefab, skins[i]));
+                    players.Add(new Player(i, playerPrefab, skins[i],textColors[i]));
 
                     GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!";
                 }
@@ -83,15 +84,6 @@ public class GameManager : MonoBehaviour
             if (players.Count > 1)
             {
                 promptText.SetActive(true);
-            }
-        }
-
-        foreach(Player p in players)
-        {
-            if(p.Score >= MAX_SCORE)
-            {
-                //ResetPlayerScores();
-                loadScene(0);
             }
         }
 
@@ -146,9 +138,6 @@ public class GameManager : MonoBehaviour
 
             players[i].SpawnNewPlayer(spawnPoints[spawnIndex].transform.position);
 
-            GameObject.Find("P" + pNum + "Text").GetComponent<Text>().color = new Color(255.0f, 255.0f, 255.0f, 255.0f);
-            GameObject.Find("P" + pNum + "Text").GetComponent<Text>().text = "Player " + pNum + " : Score " + players[i].Score;
-
         }
 
         //GiveAlivePlayersToCamera();
@@ -162,12 +151,8 @@ public class GameManager : MonoBehaviour
 
         playersAlive--;
 
-        GameObject.Find("P" + number + "Text").GetComponent<Text>().text = "Player " + number + " : Eliminated!";
-
-
-
         //If only one player left, increase that player's score and then respawn for next round
-        if (playersAlive == 1)
+        if (playersAlive <= 1)
         {
             for (int i = 0; i < players.Count; i++)
             {
@@ -175,15 +160,18 @@ public class GameManager : MonoBehaviour
                 {
                     GameObject.Find("P" + (i + 1) + "Text").GetComponent<Text>().text = "Player " + (i + 1) + " : Winner!";
                     players[i].WinRound();
+
+                    if(players[i].Score >= MAX_SCORE)
+                    {
+                        //Resolve win condition
+                        //SceneManager.LoadScene(1);//Load game over scene
+                        //return;
+                    }
                 }
             }
 
             Invoke("spawnPlayers", 2.1f);
         }
-
-
-
-
     }
 
     /// <summary>
