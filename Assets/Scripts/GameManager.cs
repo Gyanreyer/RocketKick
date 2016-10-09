@@ -7,14 +7,21 @@ using XInputDotNetPure;
 public class GameManager : MonoBehaviour
 {
 
+    enum GameState {
+        Menu,
+        Playing,
+        Won
+    };
+
+
+    private GameState state;
+
     public GameObject playerPrefab;//Prefab for spawning players
 
     private List<Player> players;//List of players who joined game - FUTURE NOTE: ADD OPTION TO LEAVE GAME
 
     private int playersAlive;//Keeps track of number of players alive
     public int MAX_SCORE = 10;//Max score that players aim for to win
-
-    private GameObject promptText;//GameObject for main menu's prompt text so can enable/disable it
 
     public GameObject deathPartSys;//Particle system to spawn when player dies
 
@@ -24,7 +31,6 @@ public class GameManager : MonoBehaviour
     public Color[] textColors = new Color[4];//Colors for text associate w/ each player
 
     public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
-
 
 
     public Player[] AlivePlayers { get { return players.FindAll(p=>p.Alive).ToArray(); } }//Property returns array of all currently alive players
@@ -42,11 +48,10 @@ public class GameManager : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);//Don't destroy this object, it'll persist between scenes
 
-        //If in menu scene, get prompt text and then hide it
+        //If in menu scene, get prompt text
         if (SceneManager.GetActiveScene().buildIndex == 0)
         {
-            promptText = GameObject.Find("StartPrompt");
-            promptText.SetActive(false);
+            state = GameState.Menu;
         }
 
         players = new List<Player>(4);
@@ -65,14 +70,14 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         //If on main menu, get active controllers
-        if (SceneManager.GetActiveScene().buildIndex == 0)
+        if (state == GameState.Menu)
         {
             GamePadState gpState;
 
             //Pressing R key allows you to spawn in a dummy player 2 for debugging if only have 1 controller
             if (Input.GetKeyDown(KeyCode.R) && !players.Exists(p => p.Index == 1))
             {
-                players.Add(new Player(1, playerPrefab, skins[1],textColors[1]));
+                players.Add(new Player(1, playerPrefab, skins[1], textColors[1]));
 
                 GameObject.Find("PlayerStatus" + 2).GetComponent<Text>().text = "Player " + 2 + "\nReady!";
             }
@@ -82,6 +87,7 @@ public class GameManager : MonoBehaviour
             {
                 loadScene(2);
                 ResetPlayerScores();
+                state = GameState.Playing;
             }
 
             //Check for players pressing start button and add them to game if they do - NOTE: ADD WAY FOR PLAYERS TO LEAVE W/ B BUTTON
@@ -102,11 +108,11 @@ public class GameManager : MonoBehaviour
                 }
 
                 //If player w/ this index already exists, pressing B button removes them
-                else if(gpState.Buttons.B == ButtonState.Pressed)
+                else if (gpState.Buttons.B == ButtonState.Pressed)
                 {
                     players.RemoveAll(p => p.Index == i);
 
-                    GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i+1) + "\nPress Start to Join";
+                    GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nPress Start to Join";
                 }
 
             }
@@ -114,32 +120,40 @@ public class GameManager : MonoBehaviour
             //When more than one person is ready, show prompt that you can start game, otherwise hide it
             if (players.Count > 1)
             {
-                promptText.SetActive(true);
+                GameObject.Find("StartPrompt").GetComponent<Text>().color = new Color(.77f, .42f,.48f,1);
             }
             else
             {
-                promptText.SetActive(false);
+                GameObject.Find("StartPrompt").GetComponent<Text>().color = Color.clear;
             }
         }
-
-        //If in non-menu scene - We should restructure so that the stuff that only happens in menu scene is taken care of in separate script, relevant info can be passed to GM which will persist
-        else
+        else if(state == GameState.Won)
         {
-            for(int i = 0; i < players.Count; i++)
-            {
-                //Vibrate player's controller and then decrease power over time, this is used for vibrating controller when player dies
-                if(players[i].vibrationPower > 0)
-                {
-                    GamePad.SetVibration((PlayerIndex)players[i].Index,players[i].vibrationPower,players[i].vibrationPower);
-                    players[i].vibrationPower -= Time.deltaTime;
-                }
-                else
-                {
-                    players[i].vibrationPower = 0;
-                }
+            if(Input.GetButtonDown("A Button"))
+            { 
+                loadScene(0);
+                state = GameState.Menu;
+
+                //Kill living player
+                players.Find(p => p.Alive).Die();
+
+                players.Clear();
             }
         }
 
+        for (int i = 0; i < players.Count; i++)
+        {
+            //Vibrate player's controller and then decrease power over time, this is used for vibrating controller when player dies
+            if (players[i].vibrationPower > 0)
+            {
+                GamePad.SetVibration((PlayerIndex)players[i].Index, players[i].vibrationPower, players[i].vibrationPower);
+                players[i].vibrationPower -= Time.deltaTime;
+            }
+            else
+            {
+                players[i].vibrationPower = 0;
+            }
+        }
     }
 
     //Reset all players' scores
@@ -225,10 +239,20 @@ public class GameManager : MonoBehaviour
             
             if(lastP.Score >= MAX_SCORE)
             {
+                Text winText = GameObject.Find("WinText").GetComponent<Text>();
+
+                winText.text = "Player " + lastP.PlayerNum + " wins!";
+                winText.color = textColors[lastP.Index];
+
+                GameObject.Find("ContinueText").GetComponent<Text>().color = textColors[lastP.Index];
+
                 //Resolve win condition
+                state = GameState.Won;
                 //SceneManager.LoadScene(1);//Load game over scene, not set up now so I disabled it
-                //return;
+                return;
             }
+
+            lastP.Die(2);
 
             Invoke("spawnPlayers", 2.1f);
         }
@@ -276,7 +300,8 @@ public class GameManager : MonoBehaviour
 
     void OnLevelWasLoaded(int levelIndex)
     {
-        if (levelIndex != 0)
+
+        if (levelIndex > 0)
         {     
             spawnPlayers();
             //GiveAlivePlayersToCamera();
