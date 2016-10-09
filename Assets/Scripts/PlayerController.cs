@@ -41,11 +41,17 @@ public class PlayerController : MonoBehaviour {
     private bool deflecting;//Whether player is deflecting off other player, this is necessary because otherwise one player can change direction
                             //before other and then other player gets registered as kicking them in the back
 
-    private bool inAir;
+    private bool inAir;//Whether in the air or not
+    private bool kicking;//Whether kicking or not, mostly just used for external access
 
     private GamePadState gpState;//State of gamepad each frame, used to get input
     private GamePadState prevGpState;
+
     public PlayerIndex index;//Controller index of player
+
+
+    public bool Kicking { get { return kicking; } }
+    public float CurrentSpeed { get { return playerRB.velocity.magnitude; } }
 
     //Set player's number and index
     public void SetNum(int ind)
@@ -82,108 +88,12 @@ public class PlayerController : MonoBehaviour {
 
         prevGpState = gpState;//Store gamepad state from previous frame
         gpState = GamePad.GetState(index);//Get current state of gamepad
-        
-        //If can still kick, check for input to see if need to start charging
-        if(kicksLeft > 0)
-        {
-            Vector2 rightStick = new Vector2(gpState.ThumbSticks.Right.X, gpState.ThumbSticks.Right.Y);//Store x and y of right thumbstick for easy access
-        
-            //Determine whether input means should be charging - trigger stuff is probably temporary, I'm not a fan
-            if (rightStick.magnitude > 0.75)
-            {
-                kickForce = rightStick.normalized;//Set direction of kick force as normalized vector of right stick
 
-                //Increase charge if not at max
-                if (chargeKickTimer < chargeLength)
-                {
-                    chargeKickTimer += Time.deltaTime;
-                }
+        ChargeKick();///Get input from right stick to charge kick  
 
-                //If the kick force has a direction, draw the direction indicator to visualize it
-                if (rightStick.sqrMagnitude > 0)
-                {
-                    directionIndicator.SetActive(true);
-                    directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
-                }
+        UpdateKickStatus();//Update whether kicking or not
 
-                vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
-
-                if (chargeKickTimer > chargeLength)
-                {
-                    vibrationPower += .1f;
-                }
-
-            }
-            //If not getting charge input and kickforce hasn't been reset, that means it's been released and it's time to kick!
-            else if (kickForce.sqrMagnitude > 0 && !timeToKick)
-            {
-                lastKickDirection = kickForce;//Store initial normalized direction of kick
-
-                //Multiply directional kickForce by magnitude to get final force vector to apply, mag is based on how long charged and clamped to minKick if too low
-                kickForce *= Mathf.Clamp((chargeKickTimer / chargeLength) * maxKick, minKick, maxKick);                
-
-                kickDuration = chargeKickTimer;//Set kick duration to last as long as kick was charged up, this will count down to 0
-
-                timeToKick = true;//Indicate that it's time to apply kick force
-
-                directionIndicator.SetActive(false);//Hide direction indicator
-
-                chargeKickTimer = 0;//Reset charge kick timer
-            }
-        }
-        else
-        {
-            kickForce = Vector2.zero;
-            chargeKickTimer = 0;
-        }
-
-        //Keep feet at same position as body, will offset its collider based on kick direction
-        feet.transform.position = transform.position;
-
-        BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();//Get collider on feet
-        //If kick is still in progress and player is still generally moving in same direction as initial kick, reflect that
-        if (kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0 && Vector2.Dot(playerRB.velocity.normalized,lastKickDirection) > .5f)
-        {
-            //Enable foot collider and trail particles
-            footCollider.enabled = true;
-            trailPartSys.enableEmission = true;
-
-            kickDuration -= Time.deltaTime;//Decrement kick duration
-            footCollider.offset = playerRB.velocity.normalized * .5f;//Offset foot collider
-
-        }
-        //Otherwise disable kick and hide relevant stuff
-        else
-        {
-            //Disable foot collider and trail particles
-            trailPartSys.enableEmission = false;
-            
-            footCollider.offset = Vector2.zero;
-            footCollider.enabled = false;
-
-            if(chargeKickTimer == 0)
-                GamePad.SetVibration(index, 0,0);
-        }
-   
-        //Set charge particle system emission rate based on charge - apparently C# has vars and this is the new way to set emission rate, not gonna question
-        var emission = chargePartSys.emission;
-        var rate = emission.rate;
-        rate.constantMax = (60 * chargeKickTimer / chargeLength);
-        emission.rate = rate;
-
-        //Set color, speed, and size of particles based on charge
-        chargePartSys.startColor = new Color(1, 1f / chargeKickTimer, 0.25f);
-        chargePartSys.startSpeed = 1 + (chargeKickTimer / 2f);
-        chargePartSys.startSize = .1f + .1f * (chargeKickTimer/chargeLength);
-
-        //Visually indicate when reached full charge w/ color and size change
-        if (chargeKickTimer > chargeLength)
-        {
-            chargePartSys.startColor = new Color(1,0.25f,.25f);
-            chargePartSys.startSize = .3f;
-        }
-
-
+        //Update layer that player is on so can jump through bottom of platforms - the way this works right now isn't super great, consider tweaks
         if (playerRB.velocity.y > 0)
         {
             gameObject.layer = 9;
@@ -195,20 +105,22 @@ public class PlayerController : MonoBehaviour {
 
         GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
 
+        //Decrease controller vibration power over time
         if (vibrationPower > 0)
             vibrationPower -= 2*Time.deltaTime;
         else
             vibrationPower = 0;
     }
 
+
     //Fixed update for physics stuff
     void FixedUpdate()
     {
-            //Magnitude for movement force, get slight boost if player is stationary to get them moving
-            float moveForceMag = movementForce * (playerRB.velocity.magnitude > 1 ? 1f : 10f);
+        //Magnitude for movement force, get slight boost if player is stationary to get them moving
+        float moveForceMag = movementForce * (playerRB.velocity.magnitude > 1 ? 1f : 10f);
 
-            //Add force for left stick movement - I really wish walking could be less floaty, we could try creating our own force/velocity/etc variables but that's something for later
-            playerRB.AddForce(new Vector2(gpState.ThumbSticks.Left.X * moveForceMag, 0));
+        //Add force for left stick movement - I really wish walking could be less floaty, we could try creating our own force/velocity/etc variables but that's something for later
+        playerRB.AddForce(new Vector2(gpState.ThumbSticks.Left.X * moveForceMag, 0));
 
 
 
@@ -229,16 +141,140 @@ public class PlayerController : MonoBehaviour {
                 
         //Clamp velocity to walk speed
         playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kicksLeft < maxNumKicks || kickDuration > 0 ? maxSpeed:walkSpeed);
-        
+
+        //Keep feet at same position as body, will offset its collider based on kick direction
+        feet.transform.position = transform.position;
+    }
+
+
+    //Get input from right stick to charge kick
+    void ChargeKick()
+    {
+        //If no kicks left, reset stuff and return early
+        if (kicksLeft <= 0)
+        {
+            kickForce = Vector2.zero;
+            chargeKickTimer = 0;
+
+            return;
+        }
+
+        Vector2 rightStick = new Vector2(gpState.ThumbSticks.Right.X, gpState.ThumbSticks.Right.Y);//Store x and y of right thumbstick for easy access
+
+        //Determine whether input means should be charging - trigger stuff is probably temporary, I'm not a fan
+        if (rightStick.magnitude > 0.75)
+        {
+            kickForce = rightStick.normalized;//Set direction of kick force as normalized vector of right stick
+
+            //Increase charge if not at max
+            if (chargeKickTimer < chargeLength)
+            {
+                chargeKickTimer += Time.deltaTime;
+            }
+
+            //If the kick force has a direction, draw the direction indicator to visualize it
+            if (rightStick.sqrMagnitude > 0)
+            {
+                directionIndicator.SetActive(true);
+                directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
+            }
+
+            vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
+
+            if (chargeKickTimer > chargeLength)
+            {
+                vibrationPower += .1f;
+            }
+
+        }
+        //If not getting charge input and kickforce hasn't been reset, that means it's been released and it's time to kick!
+        else if (kickForce.sqrMagnitude > 0 && !timeToKick)
+        {
+            lastKickDirection = kickForce;//Store initial normalized direction of kick
+
+            //Multiply directional kickForce by magnitude to get final force vector to apply, mag is based on how long charged and clamped to minKick if too low
+            kickForce *= Mathf.Clamp((chargeKickTimer / chargeLength) * maxKick, minKick, maxKick);
+
+            kickDuration = chargeKickTimer;//Set kick duration to last as long as kick was charged up, this will count down to 0
+
+            timeToKick = true;//Indicate that it's time to apply kick force
+
+            directionIndicator.SetActive(false);//Hide direction indicator
+
+            chargeKickTimer = 0;//Reset charge kick timer
+        }
+
+
+        //Set charge particle system emission rate based on charge - apparently C# has vars and this is the new way to set emission rate, not gonna question
+        var emission = chargePartSys.emission;
+        var rate = emission.rate;
+
+        if (chargeKickTimer > 0)
+        {
+            if (chargeKickTimer < chargeLength)
+            {
+                //Set color, speed, and size of particles based on charge
+                chargePartSys.startColor = new Color(1, 1f / chargeKickTimer, 0.25f);
+                chargePartSys.startSpeed = 1 + (chargeKickTimer / 2f);
+                chargePartSys.startSize = .1f + .1f * (chargeKickTimer / chargeLength);
+            }
+            //Visually indicate when reached full charge w/ color and size change
+            else
+            {
+                chargePartSys.startColor = new Color(1, 0.25f, .25f);
+                chargePartSys.startSize = .3f;
+            }
+
+            rate.constantMax = (60 * chargeKickTimer / chargeLength);
+        }
+        else
+            rate.constantMax = 0;
+
+        emission.rate = rate;//Set rate        
+    }
+
+    void UpdateKickStatus()
+    {
+        BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();//Get collider on feet
+
+        var em = trailPartSys.emission;
+
+        //If kick is still in progress and player is still generally moving in same direction as initial kick, reflect that
+        if (kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0 && Vector2.Dot(playerRB.velocity.normalized, lastKickDirection) > .5f)
+        {
+            kicking = true;//We are kicking
+
+            //Enable foot collider and trail particles
+            footCollider.enabled = true;
+
+            //Enable trail particles emission
+            em.enabled = true;
+
+            kickDuration -= Time.deltaTime;//Decrement kick duration
+            footCollider.offset = playerRB.velocity.normalized * .5f;//Offset foot collider for kicking people with
+
+        }
+        //Otherwise disable kick and hide relevant stuff
+        else
+        {
+            kicking = false;//No longer kicking
+
+            //Disable trail particles emission
+            em.enabled = false;
+
+            //Disable foot collider
+            footCollider.offset = Vector2.zero;
+            footCollider.enabled = false;
+        }
 
     }
+
 
     //Kill this player
     public void Die()
     {
         gm.killPlayer(playerNum);//Kill this player via the game manager
     }
-
     
 
     //Called when other collider hits this one
@@ -257,14 +293,14 @@ public class PlayerController : MonoBehaviour {
             vibrationPower = .75f* Mathf.Max(playerRB.velocity.magnitude,otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
             otherController.vibrationPower = vibrationPower;
 
-            GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 2, .2f);
+            GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 4, .3f);
             
 
             //Check if should deflect
-            if (CheckDeflect(otherPlayerBody))
+            if (CheckDeflect(otherController.playerRB))
             {
                 Deflect();
-                otherPlayerBody.GetComponent<PlayerController>().Deflect();
+                otherController.Deflect();
             }
             //If not deflecting, you're dead
             else
@@ -272,6 +308,7 @@ public class PlayerController : MonoBehaviour {
                 Die();
             }
         }
+        //Reset stuff if landed on floor or wall
         else if (other.gameObject.tag == "Floor" || other.gameObject.tag == "Wall")
         {
             inAir = false;
@@ -288,6 +325,7 @@ public class PlayerController : MonoBehaviour {
         {
             deflecting = false;
         }
+        //If you left the ground or wall. you're in the air
         else if(other.gameObject.tag == "Floor" || other.gameObject.tag == "Wall")
         {
             inAir = true;
@@ -295,10 +333,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     //Returns whether should deflect or not
-    public bool CheckDeflect(GameObject otherPlayer)
+    public bool CheckDeflect(Rigidbody2D otherPlayer)
     {
         //Returns true if velocities are significantly in opposite directions (1 = same dir, 0 = perp, -1 = opposite)
-        return Vector2.Dot(playerRB.velocity.normalized, otherPlayer.GetComponent<Rigidbody2D>().velocity.normalized) < -0.2f;
+        return Vector2.Dot(playerRB.velocity.normalized, otherPlayer.velocity.normalized) < -0.2f;
     }
 
     //Deflect this player
