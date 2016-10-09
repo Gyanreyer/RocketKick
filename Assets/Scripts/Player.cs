@@ -49,8 +49,6 @@ public class Player : MonoBehaviour
         score++;
 
         scoreText.text = score.ToString();
-
-        Die(2);
     }
 
     //Spawn a new player given 
