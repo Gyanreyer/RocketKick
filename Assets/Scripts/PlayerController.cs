@@ -439,4 +439,9 @@ public class PlayerController : MonoBehaviour {
         //call for state change on animator
         ChangeAnimationState();
     }
+
+    private void PickSprite()
+    {
+        spriteRen.sprite.Equals(gm.sprites[playerNum - 1]);
+    }
 }

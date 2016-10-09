@@ -751,6 +751,11 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 7053dda3681ea2f40a34bf5e75efdcbc, type: 2}
   - {fileID: 2100000, guid: 1db673cd14befe4428a037c6fb58713e, type: 2}
   - {fileID: 2100000, guid: d4d338bb352e7814180df85002fa1756, type: 2}
+  sprites:
+  - {fileID: 21300000, guid: 666e6ac6045d5014a807ede0fcae7c8b, type: 3}
+  - {fileID: 21300000, guid: e07b5f075ffed8f4783ec21c91a07d6c, type: 3}
+  - {fileID: 21300000, guid: 666e6ac6045d5014a807ede0fcae7c8b, type: 3}
+  - {fileID: 21300000, guid: e07b5f075ffed8f4783ec21c91a07d6c, type: 3}
   textColors:
   - {r: 1, g: 0.92941177, b: 0, a: 1}
   - {r: 0.40392157, g: 0.78431374, b: 0.84313726, a: 1}

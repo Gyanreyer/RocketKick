@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     public GameObject deathPartSys;//Particle system to spawn when player dies
 
     public Material[] skins = new Material[4];//Skins for players
+    public Sprite[] sprites = new Sprite[4];//Skins for players
 
     public Color[] textColors = new Color[4];//Colors for text associate w/ each player
 
@@ -50,6 +51,14 @@ public class GameManager : MonoBehaviour
 
         players = new List<Player>(4);
         playersAlive = 0;
+        
+        /*
+        for(int i = 0; i < sprites.Length; i++)
+        {
+            Resources.Load<Sprite>("Assets\\ArtAssets\\FinishedSprites\\P1\\PL" + (i + 1) + "_TRSpriteSheet_Large_3");
+        }
+        */
+
     }
 
     // Update is called once per frame
