@@ -56,6 +56,12 @@ public class PlayerController : MonoBehaviour {
     public bool Kicking { get { return kicking; } }
     public float CurrentSpeed { get { return playerRB.velocity.magnitude; } }
 
+    private Sprite sprite;
+    private SpriteRenderer spriteRen;
+    private Animator animator; //added for sprites
+    private int spriteState; //0 for idle, 1 for run, 2 for kick
+    private bool flipped;
+
     //Set player's number and index
     public void SetNum(int ind)
     {
@@ -71,6 +77,7 @@ public class PlayerController : MonoBehaviour {
         chargePartSys = transform.GetChild(0).gameObject.GetComponent<ParticleSystem>();
         trailPartSys = GetComponent<ParticleSystem>();
         audio = GetComponent<AudioSource>();
+        sprite = GetComponent<Sprite>();
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         directionIndicator = transform.FindChild("DirectionIndicator").gameObject;
         directionIndicator.SetActive(false);
@@ -78,6 +85,11 @@ public class PlayerController : MonoBehaviour {
         Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feet.GetComponent<BoxCollider2D>());//Ignores physics collisions between feet and player bodies so they can intersect
 
         kicksLeft = maxNumKicks;//Initialize kicksLeft to default
+
+        animator = GetComponentInChildren<Animator>();
+        spriteRen = GetComponentInChildren<SpriteRenderer>();
+        Debug.Log(animator.ToString());
+
     }
 	
 	// Update is called once per frame
@@ -114,6 +126,10 @@ public class PlayerController : MonoBehaviour {
             vibrationPower -= 2*Time.deltaTime;
         else
             vibrationPower = 0;
+
+        ControlAnimations();
+
+        
     }
 
 
@@ -125,7 +141,6 @@ public class PlayerController : MonoBehaviour {
 
         //Add force for left stick movement - I really wish walking could be less floaty, we could try creating our own force/velocity/etc variables but that's something for later
         playerRB.AddForce(new Vector2(gpState.ThumbSticks.Left.X * moveForceMag, 0));
-
 
 
         //If it's time to kick, apply kick force
@@ -362,5 +377,66 @@ public class PlayerController : MonoBehaviour {
         lastKickDirection *= -1;//Mirror last kick direction so keep kicking
 
         
+    }
+
+    //Hnadles the state changing of the animations
+    private void ChangeAnimationState()
+    {
+        
+        Debug.Log(animator.ToString());
+        if(spriteState == 0)
+        {
+            animator.SetInteger("State", 0);
+        }
+        if(spriteState == 1)
+        {
+            animator.SetInteger("State", 1);
+        }
+        if(spriteState == 2)
+        {
+            animator.SetInteger("State", 2);
+        }
+    }
+
+    //This guy takes the velocity and turns it into animations
+    private void ControlAnimations()
+    {
+        //state 0: idle, 1: run, 2: kick
+        //control animations
+
+
+        if (playerRB.velocity == Vector2.zero)
+        {
+            spriteState = 0;
+        }
+        if (playerRB.velocity.x > 0)
+        {
+            //if flipped re flip to the right direction
+            if (flipped)
+            {
+                spriteRen.flipX = false;
+                flipped = false;
+            }
+
+            spriteState = 1;
+            
+        }
+        if (playerRB.velocity.x < 0)
+        {
+            spriteState = 1;
+
+            //if not flipped
+            if (!flipped)
+            {
+                spriteRen.flipX = true;
+                flipped = true;
+            }
+        }
+
+        if (kicking)
+            spriteState = 2;
+
+        //call for state change on animator
+        ChangeAnimationState();
     }
 }
