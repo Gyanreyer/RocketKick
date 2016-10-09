@@ -22,6 +22,9 @@ public class PlayerController : MonoBehaviour {
 
     private Vector2 lastKickDirection;//Use to keep track of direction of last kick, so if start moving in direction significantly different then stop kicking
 
+    public float vibrationPower;//Power of vibration
+
+
     public int maxNumKicks = 3;//Max number of kicks before have to touch ground again and reset
     public float chargeLength;//Time to reach max charge
     public float maxKick;//Max magnitude of kick force (when fully charged)
@@ -103,15 +106,12 @@ public class PlayerController : MonoBehaviour {
                     directionIndicator.transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(rightStick.y, rightStick.x)) - 90);
                 }
 
-                float vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
+                vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
 
                 if (chargeKickTimer > chargeLength)
                 {
                     vibrationPower += .1f;
                 }
-
-
-                GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
 
             }
             //If not getting charge input and kickforce hasn't been reset, that means it's been released and it's time to kick!
@@ -151,12 +151,6 @@ public class PlayerController : MonoBehaviour {
             kickDuration -= Time.deltaTime;//Decrement kick duration
             footCollider.offset = playerRB.velocity.normalized * .5f;//Offset foot collider
 
-            if (chargeKickTimer == 0)
-            {
-                float vibrationPower = .1f * kickDuration / chargeLength;
-                GamePad.SetVibration(index, vibrationPower, vibrationPower);
-            }
-
         }
         //Otherwise disable kick and hide relevant stuff
         else
@@ -190,7 +184,7 @@ public class PlayerController : MonoBehaviour {
         }
 
 
-        if(playerRB.velocity.y > 0)
+        if (playerRB.velocity.y > 0)
         {
             gameObject.layer = 9;
         }
@@ -198,6 +192,13 @@ public class PlayerController : MonoBehaviour {
         {
             gameObject.layer = 8;
         }
+
+        GamePad.SetVibration(index, vibrationPower, vibrationPower);//Set vibration on controller - THIS WILL KEEP GOING FOREVER UNLESS SET BACK TO 0
+
+        if (vibrationPower > 0)
+            vibrationPower -= 2*Time.deltaTime;
+        else
+            vibrationPower = 0;
     }
 
     //Fixed update for physics stuff
@@ -227,7 +228,7 @@ public class PlayerController : MonoBehaviour {
 
                 
         //Clamp velocity to walk speed
-        playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kickDuration > 0? maxSpeed:walkSpeed);
+        playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kicksLeft < maxNumKicks || kickDuration > 0 ? maxSpeed:walkSpeed);
         
 
     }
@@ -235,7 +236,6 @@ public class PlayerController : MonoBehaviour {
     //Kill this player
     public void Die()
     {
-        GamePad.SetVibration(index, 0, 0);//Stop vibration as a precaution
         gm.killPlayer(playerNum);//Kill this player via the game manager
     }
 
@@ -249,7 +249,16 @@ public class PlayerController : MonoBehaviour {
         {
             if (deflecting) return;//Return early if already marked as deflecting
 
-            GameObject otherPlayerBody = other.gameObject.GetComponent<Feet>().playerBody;//Get other player's GO from Feet script
+            
+            GameObject otherPlayerBody = other.gameObject.GetComponent<Feet>().playerBody;//Get other player's GO from Feet script            
+
+            PlayerController otherController = otherPlayerBody.GetComponent<PlayerController>();
+
+            vibrationPower = .75f* Mathf.Max(playerRB.velocity.magnitude,otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
+            otherController.vibrationPower = vibrationPower;
+
+            GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 2, .2f);
+            
 
             //Check if should deflect
             if (CheckDeflect(otherPlayerBody))
@@ -263,11 +272,12 @@ public class PlayerController : MonoBehaviour {
                 Die();
             }
         }
-        else if (other.gameObject.tag == "Wall" || other.gameObject.tag == "Floor")
+        else if (other.gameObject.tag == "Floor" || other.gameObject.tag == "Wall")
         {
             inAir = false;
             kicksLeft = maxNumKicks-1;
         }
+
     }
 
     //Called when collider stops colliding with you
@@ -278,7 +288,7 @@ public class PlayerController : MonoBehaviour {
         {
             deflecting = false;
         }
-        else if(other.gameObject.tag == "Wall" || other.gameObject.tag == "Floor")
+        else if(other.gameObject.tag == "Floor" || other.gameObject.tag == "Wall")
         {
             inAir = true;
         }
@@ -294,9 +304,6 @@ public class PlayerController : MonoBehaviour {
     //Deflect this player
     public void Deflect()
     {
-        float vibrationPower = playerRB.velocity.magnitude / maxSpeed;//Set power of vibration based on how fast was going
-        GamePad.SetVibration(index, vibrationPower, vibrationPower);
-
         playerRB.velocity *= -.8f;//Mirror velocity w/ 20% speed loss
         deflecting = true;//Set deflecting to true so no accidental killings after velocities are flipped
         lastKickDirection *= -1;//Mirror last kick direction so keep kicking

@@ -87,6 +87,22 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        else
+        {
+            for(int i = 0; i < players.Count; i++)
+            {
+                if(players[i].vibrationPower > 0)
+                {
+                    GamePad.SetVibration((PlayerIndex)players[i].Index,players[i].vibrationPower,players[i].vibrationPower);
+                    players[i].vibrationPower -= Time.deltaTime;
+                }
+                else
+                {
+                    players[i].vibrationPower = 0;
+                }
+            }
+        }
+
     }
 
     public void ResetPlayerScores()
@@ -124,6 +140,8 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < players.Count; i++)
         {
+            players[i].vibrationPower = 0;//Stop vibration as a precaution
+
             //Finding a good spawnpoint
             spawnIndex = (int)Random.Range(0, spawnPoints.Length - 1);//used to get a random spawnpoint... we can change this later if you guys don't like random spawns
             do
@@ -147,21 +165,24 @@ public class GameManager : MonoBehaviour
 
     public void killPlayer(int number)
     {
-        players.Find(p => p.PlayerNum == number).Die();
+        Player pToKill = players.Find(p => p.PlayerNum == number);
+
+        pToKill.Die();
+
+        pToKill.vibrationPower = .75f;
 
         playersAlive--;
 
         //If only one player left, increase that player's score and then respawn for next round
-        if (playersAlive <= 1)
+        if (playersAlive == 1)
         {
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].Alive)
                 {
-                    GameObject.Find("P" + (i + 1) + "Text").GetComponent<Text>().text = "Player " + (i + 1) + " : Winner!";
                     players[i].WinRound();
 
-                    if(players[i].Score >= MAX_SCORE)
+                    if (players[i].Score >= MAX_SCORE)
                     {
                         //Resolve win condition
                         //SceneManager.LoadScene(1);//Load game over scene
@@ -177,30 +198,47 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Gives the camera an array of alive players
     /// </summary>
-    /*void GiveAlivePlayersToCamera()
+    void GiveAlivePlayersToCamera()
     {
         if (playersAlive == 0)
             return; //this here is to catch the whole "OnLevelWasLoaded" getting called twice thing
                     //more info here:http://answers.unity3d.com/questions/466880/is-onlevelwasloaded-supposed-to-be-called-twice-wh.html
-        GameObject[] alivePlayerObjects = new GameObject[playersAlive];
-        int alivePlayerCounter = 0;
-        for (int i = 0; i < activePlayers.Length; ++i)
+                    //GameObject[] alivePlayerObjects = new GameObject[playersAlive];
+                    //int alivePlayerCounter = 0;
+
+        Player[] alivePlayers = players.FindAll(p => p.Alive).ToArray();
+
+        GameObject[] alivePlayerObjects = new GameObject[alivePlayers.Length];
+        int i = 0;
+
+        foreach(Player p in alivePlayers)
+        {
+            alivePlayerObjects[i] = p.Controller.gameObject;
+            i++;
+        }
+
+
+        Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);
+
+        /*
+        for (int i = 0; i < players.Count; ++i)
         {
             if (activePlayers[i] != null) 
             {
                 alivePlayerObjects[alivePlayerCounter] = activePlayers[i];
-                ++alivePlayerCounter;
+                //++alivePlayerCounter;
             }
         }
-        Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);
-    }*/
+        Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);*/
+    }
 
 
     void OnLevelWasLoaded(int levelIndex)
     {
         if (levelIndex != 0)
-        {
+        {     
             spawnPlayers();
+            //GiveAlivePlayersToCamera();
         }
     }
 

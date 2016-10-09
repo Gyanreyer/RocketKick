@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     private Text scoreText;
     private Color textColor;
 
+    public float vibrationPower;
+
     //Properties
     public int Score { get { return score; } }
     public GameObject GO { get { return mainObject; } }

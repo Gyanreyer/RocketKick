@@ -21,6 +21,8 @@ public class dynamicCamera : MonoBehaviour
 
     void Update()
     {
+        if (alivePlayers == null) return;
+
         ///Camera Position
         //Find the average between all alive players
         centerFocus = Vector3.zero;
