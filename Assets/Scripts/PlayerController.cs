@@ -6,6 +6,9 @@ public class PlayerController : MonoBehaviour {
 
     public int playerNum;
 
+    public AudioClip[] sfx;
+    private AudioSource audio;
+
     //Player rigidbody for movement/forces/body collision
     private Rigidbody2D playerRB; 
 
@@ -67,6 +70,7 @@ public class PlayerController : MonoBehaviour {
         playerRB = GetComponent<Rigidbody2D>();
         chargePartSys = transform.GetChild(0).gameObject.GetComponent<ParticleSystem>();
         trailPartSys = GetComponent<ParticleSystem>();
+        audio = GetComponent<AudioSource>();
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         directionIndicator = transform.FindChild("DirectionIndicator").gameObject;
         directionIndicator.SetActive(false);
@@ -170,6 +174,8 @@ public class PlayerController : MonoBehaviour {
             if (chargeKickTimer < chargeLength)
             {
                 chargeKickTimer += Time.deltaTime;
+
+                if(!audio.isPlaying) audio.PlayOneShot(sfx[0], .3f);
             }
 
             //If the kick force has a direction, draw the direction indicator to visualize it
@@ -181,10 +187,13 @@ public class PlayerController : MonoBehaviour {
 
             vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
 
+
             if (chargeKickTimer > chargeLength)
             {
                 vibrationPower += .1f;
             }
+
+            
 
         }
         //If not getting charge input and kickforce hasn't been reset, that means it's been released and it's time to kick!
@@ -202,6 +211,12 @@ public class PlayerController : MonoBehaviour {
             directionIndicator.SetActive(false);//Hide direction indicator
 
             chargeKickTimer = 0;//Reset charge kick timer
+
+            AudioSource audio = GetComponent<AudioSource>();
+
+            audio.Stop();
+            audio.PlayOneShot(sfx[1]);
+
         }
 
 
