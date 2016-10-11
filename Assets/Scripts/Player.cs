@@ -13,7 +13,6 @@ public class Player : MonoBehaviour
     private int index;//Index for player
 
     private GameObject prefab;//Prefab to spawn instances of
-    private Material skin;//Material for player
 
     private Text scoreText;//UI text for this player's score
     private Color textColor;//Color for this player's text
@@ -30,12 +29,11 @@ public class Player : MonoBehaviour
     public Vector3 Position { get { return controller.transform.position; } }
 
     //Constructor sets things up
-    public Player(int ind, GameObject pb, Material mat, Color c)
+    public Player(int ind, GameObject prfb, Color c)
     {
         index = ind;
-        prefab = pb;
+        prefab = prfb;
 
-        skin = mat;
         textColor = c;
 
         score = 0;
@@ -67,20 +65,11 @@ public class Player : MonoBehaviour
 
         //Store main object by instantiating prefab
         mainObject = (GameObject)Instantiate(prefab, spawnPos, Quaternion.identity);
-        mainObject.name = "P" + PlayerNum;
 
-        //Set appropriate skin material for player body
-        mainObject.transform.FindChild("Player").GetComponent<MeshRenderer>().material = skin;
-
-        //Update children's names to include player num
-        for (int i = 0; i < mainObject.transform.childCount; i++)
-        {
-            mainObject.transform.GetChild(i).name += PlayerNum;
-        }
 
         //Store controller
         controller = mainObject.GetComponentInChildren<PlayerController>();
-        controller.SetNum(index);
+        //controller.SetNum(index);
 
         alive = true;
     }

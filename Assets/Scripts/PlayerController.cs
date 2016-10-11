@@ -33,7 +33,10 @@ public class PlayerController : MonoBehaviour {
     public float maxKick;//Max magnitude of kick force (when fully charged)
     public float minKick;//Min magnitude of kick force (when quickly tap)
 
-    public GameObject feet;//GameObject for this player's feet, collider on feet is used to determine whether a kick is a kill
+    //public GameObject feet;//GameObject for this player's feet, collider on feet is used to determine whether a kick is a kill
+
+    private BoxCollider2D feetCollider;
+
     private GameObject directionIndicator;//GameObject for direction indicator that shows what direction aiming in
 
     private ParticleSystem chargePartSys;//Particle system for charging up kick
@@ -63,11 +66,11 @@ public class PlayerController : MonoBehaviour {
     private bool flipped;
 
     //Set player's number and index
-    public void SetNum(int ind)
+    /*public void SetNum(int ind)
     {
         index = (PlayerIndex)ind;
         playerNum = ind+1;
-    }
+    }*/
 
 	// Use this for initialization
 	void Start () {
@@ -82,13 +85,16 @@ public class PlayerController : MonoBehaviour {
         directionIndicator = transform.FindChild("DirectionIndicator").gameObject;
         directionIndicator.SetActive(false);
 
-        Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feet.GetComponent<BoxCollider2D>());//Ignores physics collisions between feet and player bodies so they can intersect
+        feetCollider = transform.FindChild("Feet").GetComponent<BoxCollider2D>();
+        Physics2D.IgnoreCollision(GetComponent<BoxCollider2D>(),feetCollider);//Ignores physics collisions between feet and player bodies so they can intersect
 
-        kicksLeft = maxNumKicks;//Initialize kicksLeft to default
+        kicksLeft = maxNumKicks;//Initialize kicksLeft to default  
 
-        animator = GetComponentInChildren<Animator>();
+        animator = GetComponent<Animator>();
         spriteRen = GetComponentInChildren<SpriteRenderer>();
         Debug.Log(animator.ToString());
+
+        index = (PlayerIndex)(playerNum - 1);
 
     }
 	
@@ -161,8 +167,6 @@ public class PlayerController : MonoBehaviour {
         //Clamp velocity to walk speed
         playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kicksLeft < maxNumKicks || kickDuration > 0 ? maxSpeed:walkSpeed);
 
-        //Keep feet at same position as body, will offset its collider based on kick direction
-        feet.transform.position = transform.position;
     }
 
 
@@ -265,8 +269,6 @@ public class PlayerController : MonoBehaviour {
 
     void UpdateKickStatus()
     {
-        BoxCollider2D footCollider = feet.GetComponent<BoxCollider2D>();//Get collider on feet
-
         var em = trailPartSys.emission;
 
         //If kick is still in progress and player is still generally moving in same direction as initial kick, reflect that
@@ -275,13 +277,15 @@ public class PlayerController : MonoBehaviour {
             kicking = true;//We are kicking
 
             //Enable foot collider and trail particles
-            footCollider.enabled = true;
+            feetCollider.enabled = true;
 
             //Enable trail particles emission
             em.enabled = true;
 
             kickDuration -= Time.deltaTime;//Decrement kick duration
-            footCollider.offset = playerRB.velocity.normalized * .5f;//Offset foot collider for kicking people with
+            //footCollider.offset = playerRB.velocity.normalized * .5f;//Offset foot collider for kicking people with
+
+            transform.eulerAngles = new Vector3(0, 0, (Mathf.Rad2Deg * Mathf.Atan2(playerRB.velocity.y, playerRB.velocity.x))+90);
 
         }
         //Otherwise disable kick and hide relevant stuff
@@ -293,8 +297,10 @@ public class PlayerController : MonoBehaviour {
             em.enabled = false;
 
             //Disable foot collider
-            footCollider.offset = Vector2.zero;
-            footCollider.enabled = false;
+            //footCollider.offset = Vector2.zero;
+            feetCollider.enabled = false;
+
+            transform.eulerAngles = Vector3.zero;
         }
 
     }
@@ -313,10 +319,12 @@ public class PlayerController : MonoBehaviour {
         //If collided with other player's feet, they have kicked you, determine if you die or deflect
         if(other.gameObject.tag == "Feet")
         {
+            Debug.Log("Hit with feet");
+
             if (deflecting) return;//Return early if already marked as deflecting
 
             
-            GameObject otherPlayerBody = other.gameObject.GetComponent<Feet>().playerBody;//Get other player's GO from Feet script            
+            GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
 
             PlayerController otherController = otherPlayerBody.GetComponent<PlayerController>();
 
@@ -345,6 +353,47 @@ public class PlayerController : MonoBehaviour {
             kicksLeft = maxNumKicks-1;
         }
 
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Feet")
+        {
+            Debug.Log("Hit with feet");
+
+            if (deflecting) return;//Return early if already marked as deflecting
+
+
+            GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
+
+            PlayerController otherController = otherPlayerBody.GetComponent<PlayerController>();
+
+            vibrationPower = .75f * Mathf.Max(playerRB.velocity.magnitude, otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
+            otherController.vibrationPower = vibrationPower;
+
+            GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 4, .3f);
+
+
+            //Check if should deflect
+            if (CheckDeflect(otherController.playerRB))
+            {
+                Deflect();
+                otherController.Deflect();
+            }
+            //If not deflecting, you're dead
+            else
+            {
+                Die();
+            }
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Feet")
+        {
+            deflecting = false;
+        }
     }
 
     //Called when collider stops colliding with you
@@ -382,8 +431,10 @@ public class PlayerController : MonoBehaviour {
     //Hnadles the state changing of the animations
     private void ChangeAnimationState()
     {
+
         
-        Debug.Log(animator.ToString());
+        
+        //Debug.Log(animator.ToString());
         if(spriteState == 0)
         {
             animator.SetInteger("State", 0);
@@ -392,7 +443,7 @@ public class PlayerController : MonoBehaviour {
         {
             animator.SetInteger("State", 1);
         }
-        if(spriteState == 2)
+        if (spriteState == 2)
         {
             animator.SetInteger("State", 2);
         }
@@ -409,39 +460,31 @@ public class PlayerController : MonoBehaviour {
         {
             spriteState = 0;
         }
-        if (playerRB.velocity.x > 0)
+        else if (kicking)
         {
-            //if flipped re flip to the right direction
-            if (flipped)
-            {
-                spriteRen.flipX = false;
-                flipped = false;
-            }
-
-            spriteState = 1;
-            
-        }
-        if (playerRB.velocity.x < 0)
-        {
-            spriteState = 1;
-
-            //if not flipped
-            if (!flipped)
-            {
-                spriteRen.flipX = true;
-                flipped = true;
-            }
-        }
-
-        if (kicking)
             spriteState = 2;
+            spriteRen.flipX = false;
+
+        }
+        else
+        {
+            spriteRen.flipX = (playerRB.velocity.x < 0);
+
+            if (inAir)
+                spriteState = 3;
+
+            else
+                spriteState = 1;
+        }
+
+
 
         //call for state change on animator
-        ChangeAnimationState();
+        animator.SetInteger("State", spriteState);
     }
 
     private void PickSprite()
     {
-        spriteRen.sprite.Equals(gm.sprites[playerNum - 1]);
+        //spriteRen.sprite.Equals(gm.sprites[playerNum - 1]);
     }
 }
