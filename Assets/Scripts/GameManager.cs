@@ -54,13 +54,6 @@ public class GameManager : MonoBehaviour
 
         players = new List<Player>(4);
         playersAlive = 0;
-        
-        /*
-        for(int i = 0; i < sprites.Length; i++)
-        {
-            Resources.Load<Sprite>("Assets\\ArtAssets\\FinishedSprites\\P1\\PL" + (i + 1) + "_TRSpriteSheet_Large_3");
-        }
-        */
 
     }
 

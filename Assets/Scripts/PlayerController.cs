@@ -4,6 +4,18 @@ using XInputDotNetPure;
 
 public class PlayerController : MonoBehaviour {
 
+    enum AnimationState
+    {
+        idle,
+        run,
+        kick,
+        fall,
+        wall
+    };
+
+
+    private AnimationState animState;
+
     public int playerNum;
 
     public AudioClip[] sfx;
@@ -49,6 +61,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool inAir;//Whether in the air or not
     private bool kicking;//Whether kicking or not, mostly just used for external access
+    private bool onWall;//Whether hanging on wall
 
     private GamePadState gpState;//State of gamepad each frame, used to get input
     private GamePadState prevGpState;
@@ -92,7 +105,6 @@ public class PlayerController : MonoBehaviour {
 
         animator = GetComponent<Animator>();
         spriteRen = GetComponentInChildren<SpriteRenderer>();
-        Debug.Log(animator.ToString());
 
         index = (PlayerIndex)(playerNum - 1);
 
@@ -317,22 +329,22 @@ public class PlayerController : MonoBehaviour {
     void OnCollisionEnter2D(Collision2D other)
     {
         //If collided with other player's feet, they have kicked you, determine if you die or deflect
-        if(other.gameObject.tag == "Feet")
+        if (other.gameObject.tag == "Feet")
         {
             Debug.Log("Hit with feet");
 
             if (deflecting) return;//Return early if already marked as deflecting
 
-            
+
             GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
 
             PlayerController otherController = otherPlayerBody.GetComponent<PlayerController>();
 
-            vibrationPower = .75f* Mathf.Max(playerRB.velocity.magnitude,otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
+            vibrationPower = .75f * Mathf.Max(playerRB.velocity.magnitude, otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
             otherController.vibrationPower = vibrationPower;
 
             GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 4, .3f);
-            
+
 
             //Check if should deflect
             if (CheckDeflect(otherController.playerRB))
@@ -347,22 +359,52 @@ public class PlayerController : MonoBehaviour {
             }
         }
         //Reset stuff if landed on floor or wall
-        else if (other.gameObject.tag == "Floor" || other.gameObject.tag == "Wall")
+        else if (other.gameObject.tag == "Floor")
         {
             inAir = false;
-            kicksLeft = maxNumKicks-1;
+            kicksLeft = maxNumKicks - 1;
         }
 
+        //Do stuff to hang on wall...  not sure what yet
+        else if (other.gameObject.tag == "Wall")
+        {
+            inAir = false;
+            //kicking = false;
+            kickDuration = 0;
+            kicksLeft = maxNumKicks - 1;       
+
+            onWall = true;
+        }
+
+
+    }
+
+    //Called when collider stops colliding with you
+    void OnCollisionExit2D(Collision2D other)
+    {
+        //If another player's feet have exited that means you're all good on deflecting, reset it to false
+        if (other.gameObject.tag == "Feet")
+        {
+            deflecting = false;
+        }
+        //If you left the ground or wall. you're in the air
+        else if (other.gameObject.tag == "Floor")
+        {
+            inAir = true;
+        }
+        else if(other.gameObject.tag == "Wall")
+        {
+            inAir = true;
+
+            onWall = false;
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.tag == "Feet")
         {
-            Debug.Log("Hit with feet");
-
             if (deflecting) return;//Return early if already marked as deflecting
-
 
             GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
 
@@ -396,20 +438,7 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    //Called when collider stops colliding with you
-    void OnCollisionExit2D(Collision2D other)
-    {
-        //If another player's feet have exited that means you're all good on deflecting, reset it to false
-        if(other.gameObject.tag == "Feet")
-        {
-            deflecting = false;
-        }
-        //If you left the ground or wall. you're in the air
-        else if(other.gameObject.tag == "Floor" || other.gameObject.tag == "Wall")
-        {
-            inAir = true;
-        }
-    }
+
 
     //Returns whether should deflect or not
     public bool CheckDeflect(Rigidbody2D otherPlayer)
@@ -428,63 +457,41 @@ public class PlayerController : MonoBehaviour {
         
     }
 
-    //Hnadles the state changing of the animations
-    private void ChangeAnimationState()
-    {
-
-        
-        
-        //Debug.Log(animator.ToString());
-        if(spriteState == 0)
-        {
-            animator.SetInteger("State", 0);
-        }
-        if(spriteState == 1)
-        {
-            animator.SetInteger("State", 1);
-        }
-        if (spriteState == 2)
-        {
-            animator.SetInteger("State", 2);
-        }
-    }
 
     //This guy takes the velocity and turns it into animations
     private void ControlAnimations()
     {
-        //state 0: idle, 1: run, 2: kick
-        //control animations
-
-
-        if (playerRB.velocity == Vector2.zero)
+        if (playerRB.velocity == Vector2.zero && animState != AnimationState.idle)
         {
-            spriteState = 0;
+            animator.Play("Idle");
+            animState = AnimationState.idle;
         }
-        else if (kicking)
+        else if (kicking && animState != AnimationState.kick)
         {
-            spriteState = 2;
-            spriteRen.flipX = false;
+            animator.Play("Kick");
+            animState = AnimationState.kick;
+            spriteRen.flipX = false;  
 
         }
-        else
+        else if (onWall && animState != AnimationState.wall)
+        {
+            animator.Play("Wall");
+            animState = AnimationState.wall;
+        }
+        else if(!kicking)
         {
             spriteRen.flipX = (playerRB.velocity.x < 0);
 
-            if (inAir)
-                spriteState = 3;
-
-            else
-                spriteState = 1;
+            if (inAir && animState != AnimationState.fall)
+            {
+                animator.Play("Fall");
+                animState = AnimationState.fall;
+            }
+            else if(!inAir && playerRB.velocity.x != 0 && animState != AnimationState.run)
+            {
+                animator.Play("Run");
+                animState = AnimationState.run;
+            }            
         }
-
-
-
-        //call for state change on animator
-        animator.SetInteger("State", spriteState);
-    }
-
-    private void PickSprite()
-    {
-        //spriteRen.sprite.Equals(gm.sprites[playerNum - 1]);
     }
 }

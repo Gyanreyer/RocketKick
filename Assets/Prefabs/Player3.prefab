@@ -782,7 +782,7 @@ ParticleSystem:
     serializedVersion: 2
     m_Type: 0
     rate:
-      scalar: 0
+      scalar: 40
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -3965,7 +3965,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: cfedfb300b7703a48823dd4de6912607, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f77d06979f340f549be1b7c9a634b9ef, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
