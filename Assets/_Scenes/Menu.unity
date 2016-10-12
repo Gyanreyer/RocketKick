@@ -741,26 +741,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 671d6f2b111fb6f4f81c131254cb3f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 1000012521809432, guid: 2c4423c1ac52ec24ca4efd5a21dcc49b,
-    type: 2}
-  MAX_SCORE: 3
+  MAX_SCORE: 10
   deathPartSys: {fileID: 1000012194997882, guid: 622d25705a149d949a0506612dd8c938,
     type: 2}
-  skins:
-  - {fileID: 2100000, guid: 51c6a1d37dcfc654593cf866d75aa324, type: 2}
-  - {fileID: 2100000, guid: 7053dda3681ea2f40a34bf5e75efdcbc, type: 2}
-  - {fileID: 2100000, guid: 1db673cd14befe4428a037c6fb58713e, type: 2}
-  - {fileID: 2100000, guid: d4d338bb352e7814180df85002fa1756, type: 2}
-  sprites:
-  - {fileID: 21300000, guid: 666e6ac6045d5014a807ede0fcae7c8b, type: 3}
-  - {fileID: 21300000, guid: e07b5f075ffed8f4783ec21c91a07d6c, type: 3}
-  - {fileID: 21300000, guid: 666e6ac6045d5014a807ede0fcae7c8b, type: 3}
-  - {fileID: 21300000, guid: e07b5f075ffed8f4783ec21c91a07d6c, type: 3}
   textColors:
   - {r: 1, g: 0.92941177, b: 0, a: 1}
   - {r: 0.40392157, g: 0.78431374, b: 0.84313726, a: 1}
   - {r: 0.8352941, g: 0.40392157, b: 0.84313726, a: 1}
   - {r: 0.11764706, g: 1, b: 0, a: 1}
+  playerPrefabs:
+  - {fileID: 1000012083885136, guid: db1b1b1ac879bf4418fe3fe7ad799a68, type: 2}
+  - {fileID: 1000011406414300, guid: 18ec0d5a843d0364ebaa543a6c2ab367, type: 2}
+  - {fileID: 1000014039381724, guid: 5413223031afb6646abbf0eb5663e530, type: 2}
+  - {fileID: 1000014254986626, guid: 3abf4d5e6d60b78458d5a5da59b59cf0, type: 2}
   spawnPoints: []
 --- !u!4 &1951433294
 Transform:
