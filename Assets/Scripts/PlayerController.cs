@@ -56,6 +56,7 @@ public class PlayerController : MonoBehaviour {
 
     private GameManager gm;//GameManager for game
 
+    public bool feetColliding;
     private bool deflecting;//Whether player is deflecting off other player, this is necessary because otherwise one player can change direction
                             //before other and then other player gets registered as kicking them in the back
 
@@ -351,18 +352,14 @@ public class PlayerController : MonoBehaviour {
     {
         if (other.gameObject.tag == "Feet")
         {
-            
-
+            /*
             if (deflecting) return;//Return early if already marked as deflecting
 
             GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
 
             PlayerController otherController = otherPlayerBody.GetComponent<PlayerController>();
 
-            vibrationPower = .75f * Mathf.Max(playerRB.velocity.magnitude, otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
-            otherController.vibrationPower = vibrationPower;
 
-            GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 4, .3f);
 
 
             //Check if should deflect
@@ -375,7 +372,9 @@ public class PlayerController : MonoBehaviour {
             else if(otherController.kicking)
             {
                 Die();
-            }
+            }*/
+
+            feetColliding = true;
         }
         else if(other.gameObject.tag=="Wall")
         {
@@ -396,12 +395,55 @@ public class PlayerController : MonoBehaviour {
         if (other.gameObject.tag == "Feet")
         {
             deflecting = false;
+
+            feetColliding = false;
         }
         else if(other.gameObject.tag == "Wall")
         {
             inAir = true;
 
             onWall = false;
+        }
+    }
+
+    void OnTriggerStay2D(Collider2D other)
+    {
+        if(other.gameObject.tag == "Feet")
+        {
+            PlayerController otherController = other.transform.parent.GetComponent<PlayerController>();
+
+            if (kicking || otherController.kicking)
+            {
+                vibrationPower = .75f * Mathf.Max(playerRB.velocity.magnitude, otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
+                otherController.vibrationPower = vibrationPower;
+
+                GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 4, .3f);
+            }
+
+            //Check if you're both kicking
+            if (kicking  && otherController.kicking && feetColliding && otherController.feetColliding && !deflecting)
+            {
+                Vector2 diffInPos = transform.position-other.transform.position;
+                diffInPos = diffInPos.normalized * otherController.playerRB.velocity.magnitude;
+
+                Deflect(diffInPos);
+
+                deflecting = true;
+            }
+            else if(otherController.kicking && feetColliding && !deflecting)
+            {
+                Die();
+            }
+
+            
+
+        }
+
+        else if(other.gameObject.tag == "Wall")
+        {
+            onWall = true;
+            spriteRen.flipX = (other.gameObject.transform.position.x < transform.position.x);
+
         }
     }
 
@@ -415,9 +457,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     //Deflect this player
-    public void Deflect()
+    public void Deflect(Vector2 newDirection)
     {
-        playerRB.velocity *= -.8f;//Mirror velocity w/ 20% speed loss
+        playerRB.velocity = .8f * newDirection;
+
         deflecting = true;//Set deflecting to true so no accidental killings after velocities are flipped
         lastKickDirection *= -1;//Mirror last kick direction so keep kicking
         

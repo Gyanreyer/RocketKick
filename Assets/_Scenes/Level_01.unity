@@ -841,10 +841,9 @@ Prefab:
       propertyPath: m_Name
       value: Left Wall
       objectReference: {fileID: 0}
-    - target: {fileID: 61000010719954650, guid: 18c776bfe94de5c4893998f5246c440c,
-        type: 2}
-      propertyPath: m_Size.y
-      value: 2.5
+    - target: {fileID: 4000011555745870, guid: 18c776bfe94de5c4893998f5246c440c, type: 2}
+      propertyPath: m_LocalScale.z
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 18c776bfe94de5c4893998f5246c440c, type: 2}

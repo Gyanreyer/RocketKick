@@ -63,24 +63,32 @@ public class EffectsManager : MonoBehaviour {
     //If any players are kicking and near each other, enter slow mo
     void CheckForSlowMo()
     {
-        float dist = float.MaxValue;//Stores shortest dist between 2 players
+        float closestDist = float.MaxValue;//Stores shortest dist between 2 players
+        float speed = 0;
+
+        Player[] players = gm.AlivePlayers;
 
         //Compare all living players
-        for (int i = 0; i < gm.AlivePlayers.Length; i++)
+        for (int i = 0; i < players.Length; i++)
         {
             for (int j = 0; j < gm.AlivePlayers.Length; j++)
             {
-                if (i == j) continue;
+                if (i == j) continue;//Skip checking against self
 
-                //If either player kicking, store dist btwn if shorter than one currently stored
-                if (gm.AlivePlayers[i].Controller.Kicking || gm.AlivePlayers[j].Controller.Kicking)
-                    dist = Mathf.Min(dist, (gm.AlivePlayers[i].Position - gm.AlivePlayers[j].Position).magnitude); 
+                float dist = (players[i].Position - players[j].Position).magnitude;
+
+                //If either player kicking and dist between is shorter than what's stored, store it as new closest dist along with the fastest speed between the two
+                if (dist < closestDist && (players[i].Controller.Kicking || players[j].Controller.Kicking))
+                {
+                    closestDist = dist;
+                    speed = Mathf.Max(players[i].Controller.CurrentSpeed,players[j].Controller.CurrentSpeed);
+                }
             }
         }
 
-        //If shortest dist is within radius, slow time based on how close they are, otherwise start moving timescale back toward 1
-        if (dist < 2f)
-            playSpeed = Mathf.Clamp(dist / 2, .1f, 1);
+        //If shortest dist is within radius, slow time based on how close they are and how fast they're moving, otherwise start moving timescale back toward 1
+        if (closestDist < 2f)
+            playSpeed = Mathf.Clamp((players[0].Controller.maxSpeed/(speed*4))*(closestDist/2), .1f, 1);//TEST VALUES AND TWEAK
         else if (playSpeed < 1)
             playSpeed += 2 * Time.deltaTime;
         else
