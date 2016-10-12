@@ -76,7 +76,13 @@ public class GameManager : MonoBehaviour
             //If 2+ players, start game when someone presses A button
             if (players.Count > 1 && Input.GetButtonDown("A Button"))
             {
-                loadScene(1);
+                //loadScene(1);
+                //loadScene(2);
+                //loadScene(3);
+                //loadScene(4);
+
+                loadScene(Random.Range(1, 5));
+
                 ResetPlayerScores();
                 state = GameState.Playing;
             }
