@@ -60,7 +60,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000011333285758}
   - 61: {fileID: 61000011852724014}
-  m_Layer: 8
+  m_Layer: 12
   m_Name: Feet
   m_TagString: Feet
   m_Icon: {fileID: 0}
@@ -209,9 +209,9 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_Offset: {x: 0, y: -1.5}
+  m_Offset: {x: 0, y: -1.1}
   serializedVersion: 2
-  m_Size: {x: 1, y: 0.5}
+  m_Size: {x: 1, y: 1}
 --- !u!82 &82000011891349852
 AudioSource:
   m_ObjectHideFlags: 1
@@ -377,7 +377,7 @@ ParticleSystem:
   moveWithTransform: 0
   autoRandomSeed: 1
   scalingMode: 1
-  randomSeed: -751093900
+  randomSeed: -1261672605
   InitialModule:
     serializedVersion: 2
     enabled: 1
@@ -2111,7 +2111,7 @@ ParticleSystem:
   moveWithTransform: 0
   autoRandomSeed: 1
   scalingMode: 1
-  randomSeed: -1954754476
+  randomSeed: 687565072
   InitialModule:
     serializedVersion: 2
     enabled: 1
