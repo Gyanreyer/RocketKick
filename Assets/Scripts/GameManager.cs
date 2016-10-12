@@ -55,14 +55,30 @@ public class GameManager : MonoBehaviour
         players = new List<Player>(4);
         playersAlive = 0;
 
+        GameObject controller = GameObject.Find("controller");
+        controller.GetComponent<Image>().CrossFadeAlpha(1.0f, 10.0f, false);
+        controller = GameObject.Find("controller2");
+        controller.GetComponent<Image>().CrossFadeAlpha(1.0f, 10.0f, false);
     }
 
     // Update is called once per frame
     void Update()
     {
+
         //If on main menu, get active controllers
         if (state == GameState.Menu)
         {
+            GameObject controller = GameObject.Find("controller");
+            Color tmp = controller.GetComponent<Image>().color;
+            tmp.a = tmp.a + .01f;
+            if (tmp.a < 1.0f)
+            {
+                controller.GetComponent<Image>().color = tmp;
+                controller = GameObject.Find("controller2");
+                controller.GetComponent<Image>().color = tmp;
+            }
+            
+
             GamePadState gpState;
 
             //Pressing R key allows you to spawn in a dummy player 2 for debugging if only have 1 controller
@@ -95,6 +111,7 @@ public class GameManager : MonoBehaviour
                         players.Add(new Player(i, playerPrefabs[i], textColors[i]));
 
                         GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!\nPress B to Leave";
+
                     }
                 }
 
