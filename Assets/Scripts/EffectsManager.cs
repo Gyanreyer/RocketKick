@@ -10,6 +10,8 @@ public class EffectsManager : MonoBehaviour {
 
     private Vector3 originalPos;//Once dynamic cam is working this'll interfere, shouldn't be too hard to fix
 
+    private DynamicCamera dynCam;
+
     private float playSpeed;//Speed at which game runs/does fixed updates for physics - cool beans
 
     private GameManager gm;
@@ -19,7 +21,10 @@ public class EffectsManager : MonoBehaviour {
 
         playSpeed = 1;
 
-        originalPos = Camera.main.transform.position;//Original pos to return camera to, not sure how this'll interact with dynamic camera but it'll do for now
+        dynCam = GameObject.Find("Main Camera").GetComponent<DynamicCamera>();
+
+        //originalPos = Camera.main.transform.position;//Original pos to return camera to, not sure how this'll interact with dynamic camera but it'll do for now
+        originalPos = dynCam.CamPos;
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
 	}
@@ -36,7 +41,8 @@ public class EffectsManager : MonoBehaviour {
     //Sets values for shake
     public void Shake(float intensity, float duration)
     {
-        originalPos = Camera.main.transform.position;
+        //originalPos = Camera.main.transform.position;
+        originalPos = dynCam.CamPos;
 
         shakeIntensity = intensity;
         shakeDuration = duration;
@@ -56,7 +62,8 @@ public class EffectsManager : MonoBehaviour {
         }
         else
         {
-            Camera.main.transform.position = originalPos;//Return to original pos
+            //Camera.main.transform.position = originalPos;//Return to original pos
+            Camera.main.transform.position = dynCam.CamPos;
         }
     }
 
