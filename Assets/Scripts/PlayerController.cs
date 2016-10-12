@@ -78,12 +78,6 @@ public class PlayerController : MonoBehaviour {
     private int spriteState; //0 for idle, 1 for run, 2 for kick
     private bool flipped;
 
-    //Set player's number and index
-    /*public void SetNum(int ind)
-    {
-        index = (PlayerIndex)ind;
-        playerNum = ind+1;
-    }*/
 
 	// Use this for initialization
 	void Start () {
@@ -177,7 +171,7 @@ public class PlayerController : MonoBehaviour {
 
                 
         //Clamp velocity to walk speed
-        playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kicksLeft < maxNumKicks || kickDuration > 0 ? maxSpeed:walkSpeed);
+        playerRB.velocity = Vector2.ClampMagnitude(playerRB.velocity, kicksLeft < maxNumKicks || kicking ? maxSpeed:walkSpeed);
 
     }
 
@@ -219,7 +213,7 @@ public class PlayerController : MonoBehaviour {
             vibrationPower = .1f + .1f * chargeKickTimer / chargeLength;//How hard controller should vibrate, based on how high charged up
 
 
-            if (chargeKickTimer > chargeLength)
+            if (chargeKickTimer >= chargeLength)
             {
                 vibrationPower += .1f;
             }
@@ -281,15 +275,16 @@ public class PlayerController : MonoBehaviour {
 
     void UpdateKickStatus()
     {
+
         var em = trailPartSys.emission;
 
         //If kick is still in progress and player is still generally moving in same direction as initial kick, reflect that
-        if (kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0 && Vector2.Dot(playerRB.velocity.normalized, lastKickDirection) > .5f)
+        if ((kickDuration > 0 && playerRB.velocity.sqrMagnitude > 0 && Vector2.Dot(playerRB.velocity.normalized, lastKickDirection) > .5f) || timeToKick)
         {
             kicking = true;//We are kicking
 
             //Enable foot collider and trail particles
-            feetCollider.enabled = true;
+           // feetCollider.enabled = true;
 
             //Enable trail particles emission
             em.enabled = true;
@@ -303,6 +298,8 @@ public class PlayerController : MonoBehaviour {
         //Otherwise disable kick and hide relevant stuff
         else
         {
+            kickDuration = 0;
+
             kicking = false;//No longer kicking
 
             //Disable trail particles emission
@@ -310,9 +307,12 @@ public class PlayerController : MonoBehaviour {
 
             //Disable foot collider
             //footCollider.offset = Vector2.zero;
-            feetCollider.enabled = false;
+            //feetCollider.enabled = false;
+            //feetCollider.gameObject.SetActive(false);
 
             transform.eulerAngles = Vector3.zero;
+
+            
         }
 
     }
@@ -328,52 +328,11 @@ public class PlayerController : MonoBehaviour {
     //Called when other collider hits this one
     void OnCollisionEnter2D(Collision2D other)
     {
-        //If collided with other player's feet, they have kicked you, determine if you die or deflect
-        if (other.gameObject.tag == "Feet")
-        {
-            Debug.Log("Hit with feet");
 
-            if (deflecting) return;//Return early if already marked as deflecting
-
-
-            GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
-
-            PlayerController otherController = otherPlayerBody.GetComponent<PlayerController>();
-
-            vibrationPower = .75f * Mathf.Max(playerRB.velocity.magnitude, otherController.playerRB.velocity.magnitude) / maxSpeed;//Set power of vibration based on how fast fastest of the two was moving
-            otherController.vibrationPower = vibrationPower;
-
-            GameObject.Find("EffectsManager").GetComponent<EffectsManager>().Shake(vibrationPower / 4, .3f);
-
-
-            //Check if should deflect
-            if (CheckDeflect(otherController.playerRB))
-            {
-                Deflect();
-                otherController.Deflect();
-            }
-            //If not deflecting, you're dead
-            else
-            {
-                Die();
-            }
-        }
-        //Reset stuff if landed on floor or wall
-        else if (other.gameObject.tag == "Floor")
+        if (other.gameObject.tag == "Floor")
         {
             inAir = false;
             kicksLeft = maxNumKicks - 1;
-        }
-
-        //Do stuff to hang on wall...  not sure what yet
-        else if (other.gameObject.tag == "Wall")
-        {
-            inAir = false;
-            //kicking = false;
-            kickDuration = 0;
-            kicksLeft = maxNumKicks - 1;       
-
-            onWall = true;
         }
 
 
@@ -382,21 +341,9 @@ public class PlayerController : MonoBehaviour {
     //Called when collider stops colliding with you
     void OnCollisionExit2D(Collision2D other)
     {
-        //If another player's feet have exited that means you're all good on deflecting, reset it to false
-        if (other.gameObject.tag == "Feet")
-        {
-            deflecting = false;
-        }
-        //If you left the ground or wall. you're in the air
-        else if (other.gameObject.tag == "Floor")
+        if (other.gameObject.tag == "Floor")
         {
             inAir = true;
-        }
-        else if(other.gameObject.tag == "Wall")
-        {
-            inAir = true;
-
-            onWall = false;
         }
     }
 
@@ -404,6 +351,8 @@ public class PlayerController : MonoBehaviour {
     {
         if (other.gameObject.tag == "Feet")
         {
+            
+
             if (deflecting) return;//Return early if already marked as deflecting
 
             GameObject otherPlayerBody = other.transform.parent.gameObject;//Get other player's GO from Feet script            
@@ -417,16 +366,28 @@ public class PlayerController : MonoBehaviour {
 
 
             //Check if should deflect
-            if (CheckDeflect(otherController.playerRB))
+            if (CheckDeflect(otherController.playerRB) && (kicking && otherController.kicking))
             {
                 Deflect();
                 otherController.Deflect();
             }
             //If not deflecting, you're dead
-            else
+            else if(otherController.kicking)
             {
                 Die();
             }
+        }
+        else if(other.gameObject.tag=="Wall")
+        {
+            spriteRen.flipX = (other.gameObject.transform.position.x < transform.position.x);
+
+            inAir = false;
+
+            kickDuration = 0;
+            kicksLeft = maxNumKicks - 1;
+
+            onWall = true;
+            
         }
     }
 
@@ -435,6 +396,12 @@ public class PlayerController : MonoBehaviour {
         if (other.gameObject.tag == "Feet")
         {
             deflecting = false;
+        }
+        else if(other.gameObject.tag == "Wall")
+        {
+            inAir = true;
+
+            onWall = false;
         }
     }
 
@@ -453,7 +420,6 @@ public class PlayerController : MonoBehaviour {
         playerRB.velocity *= -.8f;//Mirror velocity w/ 20% speed loss
         deflecting = true;//Set deflecting to true so no accidental killings after velocities are flipped
         lastKickDirection *= -1;//Mirror last kick direction so keep kicking
-
         
     }
 
@@ -461,37 +427,54 @@ public class PlayerController : MonoBehaviour {
     //This guy takes the velocity and turns it into animations
     private void ControlAnimations()
     {
-        if (playerRB.velocity == Vector2.zero && animState != AnimationState.idle)
+
+        if (!onWall && playerRB.velocity == Vector2.zero)
         {
-            animator.Play("Idle");
-            animState = AnimationState.idle;
+            if (animState != AnimationState.idle)
+            {
+                animator.Play("Idle");
+                animState = AnimationState.idle;
+            }
         }
-        else if (kicking && animState != AnimationState.kick)
+        else if (kicking)
         {
-            animator.Play("Kick");
-            animState = AnimationState.kick;
-            spriteRen.flipX = false;  
+            if (animState != AnimationState.kick)
+            {
+
+                animator.Play("Kick");
+                animState = AnimationState.kick;
+                spriteRen.flipX = false;
+            }
+        }
+        else if (onWall)
+        {
+            if (animState != AnimationState.wall)
+            { 
+                animator.Play("Wall");
+                animState = AnimationState.wall;
+            }
 
         }
-        else if (onWall && animState != AnimationState.wall)
-        {
-            animator.Play("Wall");
-            animState = AnimationState.wall;
-        }
-        else if(!kicking)
+        else if (!kicking)
         {
             spriteRen.flipX = (playerRB.velocity.x < 0);
 
-            if (inAir && animState != AnimationState.fall)
+            if (inAir)
             {
-                animator.Play("Fall");
-                animState = AnimationState.fall;
+                if (animState != AnimationState.fall)
+                {
+                    animator.Play("Fall");
+                    animState = AnimationState.fall;
+                }
             }
-            else if(!inAir && playerRB.velocity.x != 0 && animState != AnimationState.run)
+            else if (!inAir && !onWall && playerRB.velocity.x != 0)
             {
-                animator.Play("Run");
-                animState = AnimationState.run;
-            }            
+                if (animState != AnimationState.run)
+                {
+                    animator.Play("Run");
+                    animState = AnimationState.run;
+                }
+            }
         }
     }
 }
