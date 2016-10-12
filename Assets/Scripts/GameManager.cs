@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
 
     private GameState state;
 
+    public GameObject playerPrefab;//Prefab for spawning players
+
     private List<Player> players;//List of players who joined game - FUTURE NOTE: ADD OPTION TO LEAVE GAME
 
     private int playersAlive;//Keeps track of number of players alive
@@ -23,13 +25,13 @@ public class GameManager : MonoBehaviour
 
     public GameObject deathPartSys;//Particle system to spawn when player dies
 
-    public Color[] textColors = new Color[4];//Colors for text associate w/ each player
+    public Material[] skins = new Material[4];//Skins for players
+    public Sprite[] sprites = new Sprite[4];//Skins for players
 
-    public GameObject[] playerPrefabs;
+    public Color[] textColors = new Color[4];//Colors for text associate w/ each player
 
     public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
 
-    
 
     public Player[] AlivePlayers { get { return players.FindAll(p=>p.Alive).ToArray(); } }//Property returns array of all currently alive players
 
@@ -75,7 +77,7 @@ public class GameManager : MonoBehaviour
             //Pressing R key allows you to spawn in a dummy player 2 for debugging if only have 1 controller
             if (Input.GetKeyDown(KeyCode.R) && !players.Exists(p => p.Index == 1))
             {
-                players.Add(new Player(1, playerPrefabs[1], textColors[1]));
+                players.Add(new Player(1, playerPrefab, skins[1], textColors[1]));
 
                 GameObject.Find("PlayerStatus" + 2).GetComponent<Text>().text = "Player " + 2 + "\nReady!";
             }
@@ -99,7 +101,7 @@ public class GameManager : MonoBehaviour
                     //Add player if press start
                     if (gpState.Buttons.Start == ButtonState.Pressed)
                     {
-                        players.Add(new Player(i, playerPrefabs[i], textColors[i]));
+                        players.Add(new Player(i, playerPrefab, skins[i], textColors[i]));
 
                         GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!\nPress B to Leave";
                     }
