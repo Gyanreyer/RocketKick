@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
             }
 
             //If 2+ players, start game when someone presses A button
-            if (players.Count > 1 && Input.GetButtonDown("A Button"))
+            if (players.Count > 1 && Input.GetButton("A Button"))
             {
                 loadScene(1);
                 ResetPlayerScores();
@@ -221,6 +221,8 @@ public class GameManager : MonoBehaviour
 
         playersAlive--;//One less player alive
 
+        //GiveAlivePlayersToCamera();
+
         //If only one player left, increase that player's score and then respawn all for next round
         if (playersAlive == 1)
         {
@@ -260,6 +262,7 @@ public class GameManager : MonoBehaviour
                     //GameObject[] alivePlayerObjects = new GameObject[playersAlive];
                     //int alivePlayerCounter = 0;
 
+        /*
         Player[] alivePlayers = players.FindAll(p => p.Alive).ToArray();
 
         GameObject[] alivePlayerObjects = new GameObject[alivePlayers.Length];
@@ -271,8 +274,12 @@ public class GameManager : MonoBehaviour
             i++;
         }
 
-
         Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);
+        */
+
+        Camera.main.GetComponent<DynamicCamera>().SetAlivePlayers(AlivePlayers);
+
+
 
         /*
         for (int i = 0; i < players.Count; ++i)
@@ -295,7 +302,7 @@ public class GameManager : MonoBehaviour
         if (levelIndex > 0)
         {     
             spawnPlayers();
-            //GiveAlivePlayersToCamera();
+            GiveAlivePlayersToCamera();
         }
     }
 

@@ -27,6 +27,7 @@ public class Player : MonoBehaviour
     public int Index { get { return index; } }
     public int PlayerNum { get { return index + 1; } }
     public Vector3 Position { get { return controller.transform.position; } }
+    public Vector3 LocalPosition { get { return controller.transform.localPosition; } }
 
     //Constructor sets things up
     public Player(int ind, GameObject prfb, Color c)
