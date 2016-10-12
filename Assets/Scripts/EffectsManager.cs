@@ -21,7 +21,7 @@ public class EffectsManager : MonoBehaviour {
 
         playSpeed = 1;
 
-        dynCam = GameObject.Find("Main Camera").GetComponent<DynamicCamera>();
+        dynCam = Camera.main.GetComponent<DynamicCamera>();
 
         //originalPos = Camera.main.transform.position;//Original pos to return camera to, not sure how this'll interact with dynamic camera but it'll do for now
         originalPos = dynCam.CamPos;

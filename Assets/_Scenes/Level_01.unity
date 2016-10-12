@@ -1180,12 +1180,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 767114823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd35a8348fcce0439079c14aefc7fe9, type: 3}
+  m_Script: {fileID: 11500000, guid: 7fd02758fe545ae4bb544ff86bec50ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scrollSpeed: 7.5
-  zoomSpeed: 0.028
-  extraCameraDist: 1.5
+  scrollSpeed: 5
+  zoomSpeed: 0.018
+  extraCameraDist: 0.5
   camZoomDeadZone: 2
 --- !u!1 &787780480
 GameObject:

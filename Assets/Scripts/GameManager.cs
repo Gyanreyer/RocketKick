@@ -272,7 +272,7 @@ public class GameManager : MonoBehaviour
         }
 
 
-        Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);
+        Camera.main.GetComponent<DynamicCamera>().SetAlivePlayers(AlivePlayers);
 
         /*
         for (int i = 0; i < players.Count; ++i)
