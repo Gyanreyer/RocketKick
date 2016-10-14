@@ -4,8 +4,20 @@ using System.Collections;
 public class DynamicCamera : MonoBehaviour
 {
     private Vector3 centerFocus;
+    private Vector3 prevFocus;
     private GameManager gameMan;
     private Player[] alivePlayers;
+    /// <summary>
+    /// Rate of lerp function
+    /// </summary>
+    public float lerpRate;
+    /// <summary>
+    /// Position in scroll lerp function
+    /// </summary>
+    private float lerpTime;
+    /// <summary>
+    /// Actual position of the camera
+    /// </summary>
     private Vector3 camPos;
     /// <summary>
     /// Just copy the camera's OrthographicSize here - it'll reset to this every time a round ends.
@@ -38,18 +50,25 @@ public class DynamicCamera : MonoBehaviour
     void Start()
     {
         centerFocus = Vector3.zero;
+        prevFocus = Vector3.zero;
         camPos = Vector3.zero;
+        lerpTime = 0;
         gameMan = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
     void Update()
     {
+        //Grab alive players from the GM
         alivePlayers = gameMan.AlivePlayers;
+        //Update the old average
+        prevFocus = centerFocus;
+        //Big if statement
         if (alivePlayers.Length > 1)
         {
             ///Camera Position
-            //Find the average between all alive players
+            //Reset the average
             centerFocus = Vector3.zero;
+            //Find the average between all alive players
             for (int i = 0; i < alivePlayers.Length; ++i)
             {
                 centerFocus += alivePlayers[i].LocalPosition;
@@ -76,23 +95,33 @@ public class DynamicCamera : MonoBehaviour
             if (farthestAbsX > farthestAbsY)
             {
                 //This check here is to prevent the camera from spazzing in and out once it hits its dead zone (the number should be played with a bit in the inspector... 2 is USUALLY good)
-                if (Mathf.Abs(xViewDist - farthestAbsX * Screen.width / Screen.height) > camZoomDeadZone)
+                if (Mathf.Abs(xViewDist - farthestAbsX) > camZoomDeadZone)
                     ZoomTowards(xViewDist, farthestAbsX);
+                Debug.Log(Mathf.Abs(xViewDist - farthestAbsX));
             }
             else
             {
                 if (Mathf.Abs(yViewDist - farthestAbsY) > camZoomDeadZone)
                     ZoomTowards(yViewDist, farthestAbsY);
+                Debug.Log(Mathf.Abs(yViewDist - farthestAbsY));
             }
         }
         else
         {
-            //If only one player remains, move back towards the center and zoom out slowly
+            //If only one player remains, move back towards the center and zoom out (or in) slowly
             centerFocus = new Vector3(0, 0, -10);
-            ZoomTowards(yViewDist, defaultSize);
+            if (Mathf.Abs(Camera.main.orthographicSize - defaultSize) > 0)
+                ZoomTowards(Camera.main.orthographicSize, defaultSize);
         }
-        //Move towards the focus point
-        camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);
+        //Lerping to make the movement look smoother...
+        //This here checks to see if the camera has moved - if it hasn't, then lerp, if it has, then move immediately
+        if (prevFocus == centerFocus)
+            lerpTime += lerpRate * Time.deltaTime;
+        else
+            lerpTime = 0.1f;    //Reset the lerp time... but 0 will make it not move and 1 won't look smooth
+        //Now move towards the focus point
+        //camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);
+        camPos = new Vector3(Mathf.Lerp(Camera.main.transform.position.x, centerFocus.x, lerpTime), Mathf.Lerp(Camera.main.transform.position.y, centerFocus.y, lerpTime), -10);
         //Update camera position for EffectsManager
         Camera.main.transform.position = camPos;
     }
@@ -115,8 +144,8 @@ public class DynamicCamera : MonoBehaviour
     {
         //Check to see if you need to move in or out
         if (xOrYDist > distToZoomTowards)
-            Camera.main.orthographicSize -= zoomSpeed;
+            Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, Camera.main.orthographicSize - zoomSpeed, distToZoomTowards / xOrYDist);
         else if (xOrYDist < distToZoomTowards)
-            Camera.main.orthographicSize += zoomSpeed;
+            Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, Camera.main.orthographicSize + zoomSpeed, distToZoomTowards / xOrYDist);
     }
 }
