@@ -4,18 +4,35 @@ using System.Collections;
 public class DynamicCamera : MonoBehaviour
 {
     private Vector3 centerFocus;
-    //    public GameObject centerFocusObj;
     private GameManager gameMan;
     private Player[] alivePlayers;
     private Vector3 camPos;
-    public float scrollSpeed = 5;   //this number can be played with
-    public float zoomSpeed = 0.018f;    //definitely need a small number for this
+    /// <summary>
+    /// Just copy the camera's OrthographicSize here - it'll reset to this every time a round ends.
+    /// </summary>
+    public float defaultSize;
+    /// <summary>
+    /// Scroll speed of the camera. Bigger levels will need faster movement.
+    /// </summary>
+    public float scrollSpeed = 5;
+    /// <summary>
+    /// Zoom speed of the camera. Bigger levels will need faster zoom.
+    /// </summary>
+    public float zoomSpeed = 0.018f;
     private float xViewDist;//half the amount of horizontal distance the camera sees
     private float yViewDist;//'' but for the vertical distance
     private float farthestAbsY, farthestAbsX;
-    public float extraCameraDist = 0.5f; //extra area to be added on to the camera, added to the farthest player X/Y
-    public float camZoomDeadZone = 2;   //needed to prevent the camera from spazzing in and out
-
+    /// <summary>
+    /// Extra padding area to be added on to the camera, added to the farthest player X/Y
+    /// </summary>
+    public float extraCameraDist = 0.5f;
+    /// <summary>
+    /// Needed to prevent the camera from spazzing in and out. 2 is a decent default but this should be played with if necessary.
+    /// </summary>
+    public float camZoomDeadZone = 2;
+    /// <summary>
+    /// The EffectsManager can use this property.
+    /// </summary>
     public Vector3 CamPos { get { return camPos; } }
 
     void Start()
@@ -38,8 +55,6 @@ public class DynamicCamera : MonoBehaviour
                 centerFocus += alivePlayers[i].LocalPosition;
             }
             centerFocus /= (float)alivePlayers.Length;
-            //Move towards the average
-            camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);
             ///Camera Zoom
             //I basically just store these values so I don't have to type them out a bunch later. It's just values from the camera center to the edge of the camera view
             yViewDist = Camera.main.orthographicSize;
@@ -54,43 +69,31 @@ public class DynamicCamera : MonoBehaviour
                 if (Mathf.Abs(centerFocus.x - alivePlayers[i].Position.x) > farthestAbsX)
                     farthestAbsX = Mathf.Abs(centerFocus.x - alivePlayers[i].Position.x);
             }
-            Debug.DrawLine(Vector3.zero, new Vector3(centerFocus.x + farthestAbsX, centerFocus.y, 0), Color.red);
-            Debug.DrawLine(Vector3.zero, new Vector3(centerFocus.x, centerFocus.y + farthestAbsY, 0), Color.red);
+            //Add extra camera padding
+            farthestAbsX += extraCameraDist;
+            farthestAbsY += extraCameraDist;
             //Check to see if you need zoom in X direction or Y direction
             if (farthestAbsX > farthestAbsY)
             {
-                //This check here is to prevent the camera from spazzing in and out once it hits its dead zone (the number can be played with a bit in the inspector)
+                //This check here is to prevent the camera from spazzing in and out once it hits its dead zone (the number should be played with a bit in the inspector... 2 is USUALLY good)
                 if (Mathf.Abs(xViewDist - farthestAbsX * Screen.width / Screen.height) > camZoomDeadZone)
-                {
-                    //Add a bit to let the farthest player see more away from the center
-                    farthestAbsX += extraCameraDist;
-                    //Check to see if you need to move in or out
-                    if (xViewDist > farthestAbsX * Screen.width / Screen.height)
-                        Camera.main.orthographicSize -= zoomSpeed;
-                    else if (xViewDist < farthestAbsX * Screen.width / Screen.height)
-                        Camera.main.orthographicSize += zoomSpeed;
-                    //don't zoom at all if you've hit the goal, hence the second if after the else
-                }
+                    ZoomTowards(xViewDist, farthestAbsX);
             }
             else
             {
                 if (Mathf.Abs(yViewDist - farthestAbsY) > camZoomDeadZone)
-                {
-                    farthestAbsY += extraCameraDist;
-                    if (yViewDist > farthestAbsY)
-                        Camera.main.orthographicSize -= zoomSpeed;
-                    else if (yViewDist < farthestAbsY)
-                        Camera.main.orthographicSize += zoomSpeed;
-                }
+                    ZoomTowards(yViewDist, farthestAbsY);
             }
         }
         else
         {
-            //This SHOULD work, but for some reason gives an index out of bounds exception
-            //camPos = gameMan.AlivePlayers[0].LocalPosition;
-            camPos = new Vector3(0, 0, -10);
-            Camera.main.orthographicSize = 7;
+            //If only one player remains, move back towards the center and zoom out slowly
+            centerFocus = new Vector3(0, 0, -10);
+            ZoomTowards(yViewDist, defaultSize);
         }
+        //Move towards the focus point
+        camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);
+        //Update camera position for EffectsManager
         Camera.main.transform.position = camPos;
     }
 
@@ -101,5 +104,19 @@ public class DynamicCamera : MonoBehaviour
     public void SetAlivePlayers(Player[] activePlayers)
     {
         alivePlayers = activePlayers;
+    }
+
+    /// <summary>
+    /// Zooms the camera size in or out
+    /// </summary>
+    /// <param name="xOrYDist">The X or Y view which will be used in testing to zoom in or out</param>
+    /// <param name="distToZoomTowards">The desired distance that xOrYDist should eventually become</param>
+    private void ZoomTowards(float xOrYDist, float distToZoomTowards)
+    {
+        //Check to see if you need to move in or out
+        if (xOrYDist > distToZoomTowards)
+            Camera.main.orthographicSize -= zoomSpeed;
+        else if (xOrYDist < distToZoomTowards)
+            Camera.main.orthographicSize += zoomSpeed;
     }
 }
