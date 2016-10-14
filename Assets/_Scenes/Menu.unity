@@ -744,16 +744,13 @@ MonoBehaviour:
   MAX_SCORE: 10
   deathPartSys: {fileID: 1000012194997882, guid: 622d25705a149d949a0506612dd8c938,
     type: 2}
-  textColors:
-  - {r: 1, g: 0.92941177, b: 0, a: 1}
-  - {r: 0.40392157, g: 0.78431374, b: 0.84313726, a: 1}
-  - {r: 0.8352941, g: 0.40392157, b: 0.84313726, a: 1}
+  playerColors:
+  - {r: 1, g: 0.76551723, b: 0, a: 1}
+  - {r: 0.05490196, g: 0.87058824, b: 0.94509804, a: 1}
+  - {r: 0.9882353, g: 0, b: 1, a: 1}
   - {r: 0.11764706, g: 1, b: 0, a: 1}
-  playerPrefabs:
-  - {fileID: 1000012083885136, guid: db1b1b1ac879bf4418fe3fe7ad799a68, type: 2}
-  - {fileID: 1000011406414300, guid: 18ec0d5a843d0364ebaa543a6c2ab367, type: 2}
-  - {fileID: 1000014039381724, guid: 5413223031afb6646abbf0eb5663e530, type: 2}
-  - {fileID: 1000014254986626, guid: 3abf4d5e6d60b78458d5a5da59b59cf0, type: 2}
+  playerPrefab: {fileID: 1000012083885136, guid: db1b1b1ac879bf4418fe3fe7ad799a68,
+    type: 2}
   spawnPoints: []
 --- !u!4 &1951433294
 Transform:

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using XInputDotNetPure;
 
 //Basic class for players that stores all relevant info about a given player - GameManager has an array of these
 public class Player : MonoBehaviour
@@ -15,7 +16,7 @@ public class Player : MonoBehaviour
     private GameObject prefab;//Prefab to spawn instances of
 
     private Text scoreText;//UI text for this player's score
-    private Color textColor;//Color for this player's text
+    private Color color;//Color for this player's text
 
     public float vibrationPower;//Power to vibrate controller with
 
@@ -35,7 +36,7 @@ public class Player : MonoBehaviour
         index = ind;
         prefab = prfb;
 
-        textColor = c;
+        color = c;
 
         score = 0;
 
@@ -62,7 +63,7 @@ public class Player : MonoBehaviour
         }
         
         //Fade score text to full color
-        scoreText.CrossFadeColor(textColor, .1f, true, true);    
+        scoreText.CrossFadeColor(color, .1f, true, true);    
 
         //Store main object by instantiating prefab
         mainObject = (GameObject)Instantiate(prefab, spawnPos, Quaternion.identity);
@@ -70,7 +71,10 @@ public class Player : MonoBehaviour
 
         //Store controller
         controller = mainObject.GetComponentInChildren<PlayerController>();
-        //controller.SetNum(index);
+        controller.index = (PlayerIndex)index;
+        controller.playerNum = index + 1;
+
+        mainObject.GetComponent<SpriteRenderer>().color = color;
 
         alive = true;
     }
@@ -80,7 +84,7 @@ public class Player : MonoBehaviour
     {
         Die(0);
 
-        scoreText.CrossFadeColor(new Color(textColor.r*.5f,textColor.g*.5f,textColor.b*.5f,.75f), .1f, true, true);
+        scoreText.CrossFadeColor(new Color(color.r*.5f,color.g*.5f,color.b*.5f,.75f), .1f, true, true);
     }
 
     //Destroy object with given delay

@@ -23,9 +23,9 @@ public class GameManager : MonoBehaviour
 
     public GameObject deathPartSys;//Particle system to spawn when player dies
 
-    public Color[] textColors = new Color[4];//Colors for text associate w/ each player
+    public Color[] playerColors = new Color[4];//Colors for text associate w/ each player
 
-    public GameObject[] playerPrefabs;
+    public GameObject playerPrefab;
 
     public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
 
@@ -68,7 +68,7 @@ public class GameManager : MonoBehaviour
             //Pressing R key allows you to spawn in a dummy player 2 for debugging if only have 1 controller
             if (Input.GetKeyDown(KeyCode.R) && !players.Exists(p => p.Index == 1))
             {
-                players.Add(new Player(1, playerPrefabs[1], textColors[1]));
+                players.Add(new Player(1, playerPrefab, playerColors[1]));
 
                 GameObject.Find("PlayerStatus" + 2).GetComponent<Text>().text = "Player " + 2 + "\nReady!";
             }
@@ -92,7 +92,7 @@ public class GameManager : MonoBehaviour
                     //Add player if press start
                     if (gpState.Buttons.Start == ButtonState.Pressed)
                     {
-                        players.Add(new Player(i, playerPrefabs[i], textColors[i]));
+                        players.Add(new Player(i, playerPrefab, playerColors[i]));
 
                         GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!\nPress B to Leave";
                     }
@@ -233,9 +233,9 @@ public class GameManager : MonoBehaviour
                 Text winText = GameObject.Find("WinText").GetComponent<Text>();
 
                 winText.text = "Player " + lastP.PlayerNum + " wins!";
-                winText.color = textColors[lastP.Index];
+                winText.color = playerColors[lastP.Index];
 
-                GameObject.Find("ContinueText").GetComponent<Text>().color = textColors[lastP.Index];
+                GameObject.Find("ContinueText").GetComponent<Text>().color = playerColors[lastP.Index];
 
                 //Resolve win condition
                 state = GameState.Won;
