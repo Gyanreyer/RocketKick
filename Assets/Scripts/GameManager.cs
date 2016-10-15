@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using XInputDotNetPure;
@@ -32,7 +33,7 @@ public class GameManager : MonoBehaviour
     
 
     public Player[] AlivePlayers { get { return players.FindAll(p=>p.Alive).ToArray(); } }//Property returns array of all currently alive players
-
+    public Player[] AllPlayers { get { return players.ToArray(); } }
 
     // Initialization, executes before Start()
     void Awake()
@@ -60,78 +61,22 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //If on main menu, get active controllers
-        if (state == GameState.Menu)
-        {
-            GamePadState gpState;
-
-            //Pressing R key allows you to spawn in a dummy player 2 for debugging if only have 1 controller
-            if (Input.GetKeyDown(KeyCode.R) && !players.Exists(p => p.Index == 1))
-            {
-                players.Add(new Player(1, playerPrefab, playerColors[1]));
-
-                GameObject.Find("PlayerStatus" + 2).GetComponent<Text>().text = "Player " + 2 + "\nReady!";
-            }
-
-            //If 2+ players, start game when someone presses A button
-            if (players.Count > 1 && Input.GetButtonDown("A Button") || Input.GetKeyDown(KeyCode.Return))
-            {
-                loadScene(1);
-                ResetPlayerScores();
-                state = GameState.Playing;
-            }
-
-            //Check for players pressing start button and add them to game if they do - NOTE: ADD WAY FOR PLAYERS TO LEAVE W/ B BUTTON
-            for (int i = 0; i < 4; i++)
-            {
-                gpState = GamePad.GetState((PlayerIndex)i);
-
-                //Check if a player doesn't exist w/ this index, if not then pressing start can add them
-                if (!players.Exists(p => p.Index == i))
-                {
-                    //Add player if press start
-                    if (gpState.Buttons.Start == ButtonState.Pressed)
-                    {
-                        players.Add(new Player(i, playerPrefab, playerColors[i]));
-
-                        GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nReady!\nPress B to Leave";
-                    }
-                }
-
-                //If player w/ this index already exists, pressing B button removes them
-                else if (gpState.Buttons.B == ButtonState.Pressed)
-                {
-                    players.RemoveAll(p => p.Index == i);
-
-                    GameObject.Find("PlayerStatus" + (i + 1)).GetComponent<Text>().text = "Player " + (i + 1) + "\nPress Start to Join";
-                }
-
-            }
-
-            //When more than one person is ready, show prompt that you can start game, otherwise hide it
-            if (players.Count > 1)
-            {
-                GameObject.Find("StartPrompt").GetComponent<Text>().color = new Color(.77f, .42f,.48f,1);
-            }
-            else
-            {
-                GameObject.Find("StartPrompt").GetComponent<Text>().color = Color.clear;
-            }
-        }
-        else if(state == GameState.Won)
+        if(state == GameState.Won)
         {
             if(Input.GetButtonDown("A Button"))
             { 
-                loadScene(0);
-                state = GameState.Menu;
-
                 //Kill living player
-                players.Find(p => p.Alive).Die();
+                Player player = players.Find(p => p.Alive);
+                Destroy(player.mainObject);
 
                 players.Clear();
+
+                SceneManager.LoadScene(0);
+                state = GameState.Menu;
             }
         }
 
+        
         for (int i = 0; i < players.Count; i++)
         {
             //Vibrate player's controller and then decrease power over time, this is used for vibrating controller when player dies
@@ -148,7 +93,7 @@ public class GameManager : MonoBehaviour
     }
 
     //Reset all players' scores
-    public void ResetPlayerScores()
+    private void ResetPlayerScores()
     {
         foreach(Player p in players)
         {
@@ -156,21 +101,34 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Used for the dynamic camera to get the locations of the player objects
-    /// </summary>
-    /// <returns></returns>
-    /*public GameObject[] getActivePlayers()
+    public void StartGame(int scene)
     {
-        return activePlayers;
-    }*/
+        ResetPlayerScores();
+        state = GameState.Playing;
 
-        //Load a scene with given index
-    public void loadScene(int i)
+        StartCoroutine(LoadScene(3+scene,3));//Load scene with 3 second delay
+    }
+
+    //Load a scene with given index, delay for given amt of time
+    IEnumerator LoadScene(int i, float delay)
     {
+        yield return new WaitForSeconds(delay);
+
         SceneManager.LoadScene(i);
     }
 
+    public void AddPlayers(Player[] ps)
+    {
+        for(int i = 0; i < ps.Length; i++)
+        {
+            if (ps[i] != null)
+            {
+                players.Add(ps[i]);
+            }
+        }
+
+        
+    }
 
     //Spawn players for all joined players
     public void spawnPlayers()
@@ -197,13 +155,11 @@ public class GameManager : MonoBehaviour
             //Set spawn to used
             spawnsUsed[spawnIndex] = true;
 
-            int pNum = players[i].PlayerNum;
-
-            players[i].SpawnNewPlayer(spawnPoints[spawnIndex].transform.position);
+            players[i].mainObject = (GameObject)Instantiate(playerPrefab,spawnPoints[spawnIndex].transform.position,Quaternion.identity);
+            players[i].SetupPlayer();
 
         }
 
-        //GiveAlivePlayersToCamera();
 
         playersAlive = players.Count;
     }
@@ -215,7 +171,8 @@ public class GameManager : MonoBehaviour
 
         Instantiate(deathPartSys,pToKill.Position,Quaternion.identity);//Make death particle system where they died
 
-        pToKill.Die();//Destroy player w/ no delay - We should consider changing this eventually so maybe the player's body goes flying or something, that'd be pretty funny/cool
+        Destroy(pToKill.mainObject);
+        pToKill.DieBeforeEnd();//Destroy player w/ no delay - We should consider changing this eventually so maybe the player's body goes flying or something, that'd be pretty funny/cool
 
         pToKill.vibrationPower = .75f;//Vibrate controller to signify death
 
@@ -243,7 +200,8 @@ public class GameManager : MonoBehaviour
                 return;
             }
 
-            lastP.Die(2);
+            Destroy(lastP.mainObject,2);
+            lastP.Die();
 
             Invoke("spawnPlayers", 2.1f);
         }
@@ -273,29 +231,16 @@ public class GameManager : MonoBehaviour
 
 
         Camera.main.GetComponent<DynamicCamera>().SetAlivePlayers(AlivePlayers);
-
-        /*
-        for (int i = 0; i < players.Count; ++i)
-        {
-            if (activePlayers[i] != null) 
-            {
-                alivePlayerObjects[alivePlayerCounter] = activePlayers[i];
-                //++alivePlayerCounter;
-            }
-        }
-        Camera.main.GetComponent<dynamicCamera>().SetAlivePlayers(alivePlayerObjects);*/
     }
 
     
 
 
-    void OnLevelWasLoaded(int levelIndex)
+    void OnLevelWasLoaded(int levelIndex)//This is now deprecated, figure out new way of doing it?
     {
-
-        if (levelIndex > 0)
+        if (levelIndex > 2)
         {     
             spawnPlayers();
-            //GiveAlivePlayersToCamera();
         }
     }
 

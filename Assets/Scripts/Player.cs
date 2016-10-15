@@ -3,11 +3,13 @@ using UnityEngine.UI;
 using XInputDotNetPure;
 
 //Basic class for players that stores all relevant info about a given player - GameManager has an array of these
-public class Player : MonoBehaviour
+public class Player
 {
+    public bool ready;
+
 
     private int score;//Score for number of rounds won
-    private GameObject mainObject;//GameObject for player's body
+    public GameObject mainObject;//GameObject for player's body
     private PlayerController controller;//Controller script for player
     private bool alive;//Whether player is alive and accessible
 
@@ -22,13 +24,13 @@ public class Player : MonoBehaviour
 
     //Properties
     public int Score { get { return score; } }
-    public GameObject GO { get { return mainObject; } }
     public PlayerController Controller { get { return controller; } }
     public bool Alive { get { return alive; } }
     public int Index { get { return index; } }
     public int PlayerNum { get { return index + 1; } }
     public Vector3 Position { get { return controller.transform.position; } }
     public Vector3 LocalPosition { get { return controller.transform.localPosition; } }
+    public Color Color { get { return color; } }
 
     //Constructor sets things up
     public Player(int ind, GameObject prfb, Color c)
@@ -41,6 +43,7 @@ public class Player : MonoBehaviour
         score = 0;
 
         alive = false;
+        ready = false;
     }
 
     //Win round by adding to score and then destroy after 2 seconds
@@ -52,7 +55,7 @@ public class Player : MonoBehaviour
     }
 
     //Spawn a new player given 
-    public void SpawnNewPlayer(Vector3 spawnPos)
+    public void SetupPlayer()
     {
         scoreText = GameObject.Find("P" + PlayerNum + "Text").GetComponent<Text>();//Get text for keeping score
 
@@ -66,7 +69,7 @@ public class Player : MonoBehaviour
         scoreText.CrossFadeColor(color, .1f, true, true);    
 
         //Store main object by instantiating prefab
-        mainObject = (GameObject)Instantiate(prefab, spawnPos, Quaternion.identity);
+       // mainObject = (GameObject)Instantiate(prefab, spawnPos, Quaternion.identity);
 
 
         //Store controller
@@ -80,17 +83,17 @@ public class Player : MonoBehaviour
     }
 
     //Die immediately and fade out score text partially
-    public void Die()
+    public void DieBeforeEnd()
     {
-        Die(0);
-
         scoreText.CrossFadeColor(new Color(color.r*.5f,color.g*.5f,color.b*.5f,.75f), .1f, true, true);
+
+        Die();
     }
 
     //Destroy object with given delay
-    public void Die(float delay)
+    public void Die()
     {
-        Destroy(mainObject, delay);
+        mainObject = null;
 
         alive = false;
     }
@@ -99,6 +102,11 @@ public class Player : MonoBehaviour
     public void resetScore()
     {
         score = 0;
+    }
+
+    public void ChangeColor(Color c)
+    {
+        color = c;
     }
 
 }

@@ -9,6 +9,7 @@ TagManager:
   - Feet
   - Spawn Point
   - Wall
+  - LevelButton
   layers:
   - Default
   - TransparentFX

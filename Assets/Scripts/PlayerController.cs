@@ -73,7 +73,6 @@ public class PlayerController : MonoBehaviour {
     public bool Kicking { get { return kicking; } }
     public float CurrentSpeed { get { return playerRB.velocity.magnitude; } }
 
-    private Sprite sprite;
     private SpriteRenderer spriteRen;
     private Animator animator; //added for sprites
     private int spriteState; //0 for idle, 1 for run, 2 for kick
@@ -88,7 +87,6 @@ public class PlayerController : MonoBehaviour {
         chargePartSys = transform.GetChild(0).gameObject.GetComponent<ParticleSystem>();
         trailPartSys = GetComponent<ParticleSystem>();
         audio = GetComponent<AudioSource>();
-        sprite = GetComponent<Sprite>();
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         directionIndicator = transform.FindChild("DirectionIndicator").gameObject;
         directionIndicator.SetActive(false);

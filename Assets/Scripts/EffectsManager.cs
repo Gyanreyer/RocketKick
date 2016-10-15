@@ -23,7 +23,6 @@ public class EffectsManager : MonoBehaviour {
 
         dynCam = Camera.main.GetComponent<DynamicCamera>();
 
-        //originalPos = Camera.main.transform.position;//Original pos to return camera to, not sure how this'll interact with dynamic camera but it'll do for now
         originalPos = dynCam.CamPos;
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
@@ -62,7 +61,6 @@ public class EffectsManager : MonoBehaviour {
         }
         else
         {
-            //Camera.main.transform.position = originalPos;//Return to original pos
             Camera.main.transform.position = dynCam.CamPos;
         }
     }
