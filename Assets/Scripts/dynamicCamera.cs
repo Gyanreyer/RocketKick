@@ -8,6 +8,10 @@ public class DynamicCamera : MonoBehaviour
     private GameManager gameMan;
     private Player[] alivePlayers;
     /// <summary>
+    /// The camera will never zoom in farther than this
+    /// </summary>
+    public float minZoom;
+    /// <summary>
     /// Rate of lerp function
     /// </summary>
     public float lerpRate;
@@ -110,7 +114,7 @@ public class DynamicCamera : MonoBehaviour
         {
             //If only one player remains, move back towards the center and zoom out (or in) slowly
             centerFocus = new Vector3(0, 0, -10);
-            if (Mathf.Abs(Camera.main.orthographicSize - defaultSize) > 0)
+            if (Mathf.Abs(Camera.main.orthographicSize - defaultSize) > camZoomDeadZone)
                 ZoomTowards(Camera.main.orthographicSize, defaultSize);
         }
         //Lerping to make the movement look smoother...
@@ -122,6 +126,9 @@ public class DynamicCamera : MonoBehaviour
         //Now move towards the focus point
         //camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);
         camPos = new Vector3(Mathf.Lerp(Camera.main.transform.position.x, centerFocus.x, lerpTime), Mathf.Lerp(Camera.main.transform.position.y, centerFocus.y, lerpTime), -10);
+        //Clamp zoom
+        if (Camera.main.orthographicSize < minZoom)
+            Camera.main.orthographicSize = minZoom;
         //Update camera position for EffectsManager
         Camera.main.transform.position = camPos;
     }
