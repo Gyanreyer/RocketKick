@@ -166,8 +166,12 @@ public class GameManager : MonoBehaviour
         
         
         playersAlive = players.Count;
-        parallaxController = GameObject.Find("Background").GetComponent<ParallaxController>();
-        parallaxController.RoundOver();
+        GameObject backGround = GameObject.Find("Background");
+        if (backGround != null)
+        {
+            parallaxController = GameObject.Find("Background").GetComponent<ParallaxController>();
+            parallaxController.RoundOver();
+        }
     }
 
     //Kill player with given number
