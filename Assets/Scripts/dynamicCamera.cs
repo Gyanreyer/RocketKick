@@ -3,45 +3,42 @@ using System.Collections;
 
 public class DynamicCamera : MonoBehaviour
 {
+    //Private vars
     private Vector3 centerFocus;
     private Vector3 prevFocus;
     private GameManager gameMan;
-    private Player[] alivePlayers;
-    /// <summary>
-    /// The camera will never zoom in farther than this
-    /// </summary>
-    public float minZoom;
-    /// <summary>
-    /// Rate of lerp function
-    /// </summary>
-    public float lerpRate;
-    /// <summary>
-    /// Position in scroll lerp function
-    /// </summary>
-    private float lerpTime;
-    /// <summary>
-    /// Actual position of the camera
-    /// </summary>
-    private Vector3 camPos;
-    /// <summary>
-    /// Just copy the camera's OrthographicSize here - it'll reset to this every time a round ends.
-    /// </summary>
-    public float defaultSize;
-    /// <summary>
-    /// Scroll speed of the camera. Bigger levels will need faster movement.
-    /// </summary>
-    public float scrollSpeed = 5;
-    /// <summary>
-    /// Zoom speed of the camera. Bigger levels will need faster zoom.
-    /// </summary>
-    public float zoomSpeed = 0.018f;
     private float xViewDist;//half the amount of horizontal distance the camera sees
     private float yViewDist;//'' but for the vertical distance
     private float farthestAbsY, farthestAbsX;
+    private float lerpTime; // Position in scroll lerp function
+    private Vector3 camPos; // Actual position of the camera
+    private Player[] alivePlayers;
+
+    //Public vars
+    /// <summary>
+    /// The camera will never zoom in farther than this
+    /// </summary>
+    public float minZoom = 3f;
+    /// <summary>
+    /// Rate of lerp function
+    /// </summary>
+    public float lerpRate = 0.1f;
+    /// <summary>
+    /// Just copy the camera's OrthographicSize here - it'll reset to this every time a round ends.
+    /// </summary>
+    public float defaultSize = 7f;
+    /// <summary>
+    /// Scroll speed of the camera. Bigger levels will need faster movement.
+    /// </summary>
+    public float scrollSpeed = 7f;
+    /// <summary>
+    /// Zoom speed of the camera. Bigger levels will need faster zoom.
+    /// </summary>
+    public float zoomSpeed = 0.042f;
     /// <summary>
     /// Extra padding area to be added on to the camera, added to the farthest player X/Y
     /// </summary>
-    public float extraCameraDist = 0.5f;
+    public float extraCameraDist = 4f;
     /// <summary>
     /// Needed to prevent the camera from spazzing in and out. 2 is a decent default but this should be played with if necessary.
     /// </summary>
@@ -101,13 +98,11 @@ public class DynamicCamera : MonoBehaviour
                 //This check here is to prevent the camera from spazzing in and out once it hits its dead zone (the number should be played with a bit in the inspector... 2 is USUALLY good)
                 if (Mathf.Abs(xViewDist - farthestAbsX) > camZoomDeadZone)
                     ZoomTowards(xViewDist, farthestAbsX);
-                Debug.Log(Mathf.Abs(xViewDist - farthestAbsX));
             }
             else
             {
                 if (Mathf.Abs(yViewDist - farthestAbsY) > camZoomDeadZone)
                     ZoomTowards(yViewDist, farthestAbsY);
-                Debug.Log(Mathf.Abs(yViewDist - farthestAbsY));
             }
         }
         else
@@ -124,9 +119,9 @@ public class DynamicCamera : MonoBehaviour
         else
             lerpTime = 0.1f;    //Reset the lerp time... but 0 will make it not move and 1 won't look smooth
         //Now move towards the focus point
-        //camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);
-        camPos = new Vector3(Mathf.Lerp(Camera.main.transform.position.x, centerFocus.x, lerpTime), Mathf.Lerp(Camera.main.transform.position.y, centerFocus.y, lerpTime), -10);
-        //Clamp zoom
+        //camPos = new Vector3(Mathf.MoveTowards(Camera.main.transform.position.x, centerFocus.x, scrollSpeed * Time.deltaTime), Mathf.MoveTowards(Camera.main.transform.position.y, centerFocus.y, scrollSpeed * Time.deltaTime), -10);    //Old method before lerping was a thing
+        camPos = new Vector3(Mathf.Lerp(Camera.main.transform.position.x, centerFocus.x, lerpTime), Mathf.Lerp(Camera.main.transform.position.y, centerFocus.y, lerpTime), -10);    //New way with lerping
+        //Clamp zoom at min
         if (Camera.main.orthographicSize < minZoom)
             Camera.main.orthographicSize = minZoom;
         //Update camera position for EffectsManager
@@ -151,8 +146,8 @@ public class DynamicCamera : MonoBehaviour
     {
         //Check to see if you need to move in or out
         if (xOrYDist > distToZoomTowards)
-            Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, Camera.main.orthographicSize - zoomSpeed, distToZoomTowards / xOrYDist);
+            Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, Camera.main.orthographicSize - zoomSpeed, (xOrYDist / distToZoomTowards) + 1f);
         else if (xOrYDist < distToZoomTowards)
-            Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, Camera.main.orthographicSize + zoomSpeed, distToZoomTowards / xOrYDist);
+            Camera.main.orthographicSize = Mathf.Lerp(Camera.main.orthographicSize, Camera.main.orthographicSize + zoomSpeed, (xOrYDist / distToZoomTowards) + 1f);
     }
 }
