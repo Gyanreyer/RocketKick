@@ -68,7 +68,10 @@ public class GameManager : MonoBehaviour
             { 
                 //Kill living player
                 Player player = players.Find(p => p.Alive);
-                Destroy(player.mainObject);
+                if (player != null)
+                {
+                    Destroy(player.mainObject);
+                }
 
                 players.Clear();
 

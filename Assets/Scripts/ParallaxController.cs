@@ -20,11 +20,11 @@ public class ParallaxController : MonoBehaviour
         frontClouds = GameObject.Find("frontClouds");
         frontMountains = GameObject.Find("frontMountains");
 
-        sunSpeed = 3500.0f;
-        backCloudSpeed = 3100.0f;
-        backMountainSpeed = 2900.0f;
-        frontCloudSpeed = 2000.0f;
-        frontMountainSpeed = 1700.0f;
+        sunSpeed = 20.0f;
+        backCloudSpeed = 18.0f;
+        backMountainSpeed = 15.0f;
+        frontCloudSpeed = 9.0f;
+        frontMountainSpeed = 12.0f;
         prevPosition = camera.transform.position;
 
         sunStartPos = suns.transform.position;
@@ -42,21 +42,24 @@ public class ParallaxController : MonoBehaviour
             float x = camera.transform.position.x;
             Debug.Log("Camera x:" + x);
             Debug.Log("Sunspeed:" + sunSpeed + "," + "Backcloudspeed" + backCloudSpeed);
-            suns.transform.position = new Vector3((x / sunSpeed) + suns.transform.position.x, suns.transform.position.y, suns.transform.position.z);
-            backClouds.transform.position = new Vector3((x / backCloudSpeed) + backClouds.transform.position.x, backClouds.transform.position.y, backClouds.transform.position.z);
-            backMountains.transform.position = new Vector3((x / backMountainSpeed) + backMountains.transform.position.x, backMountains.transform.position.y, backMountains.transform.position.z);
-            frontClouds.transform.position = new Vector3((x / frontCloudSpeed) + frontClouds.transform.position.x, frontClouds.transform.position.y, frontClouds.transform.position.z);
-            frontMountains.transform.position = new Vector3((x / frontMountainSpeed) + frontMountains.transform.position.x, frontMountains.transform.position.y, frontMountains.transform.position.z);
+            suns.transform.position = new Vector3((x / sunSpeed) + sunStartPos.x, suns.transform.position.y, suns.transform.position.z);
+            backClouds.transform.position = new Vector3((x / backCloudSpeed) + backClouStartPos.x, backClouds.transform.position.y, backClouds.transform.position.z);
+            backMountains.transform.position = new Vector3((x / backMountainSpeed) + backMounStartPos.x, backMountains.transform.position.y, backMountains.transform.position.z);
+            frontClouds.transform.position = new Vector3((x / frontCloudSpeed) + frontCloudStartPos.x, frontClouds.transform.position.y, frontClouds.transform.position.z);
+            frontMountains.transform.position = new Vector3((x / frontMountainSpeed) + frontMountStartPos.x, frontMountains.transform.position.y, frontMountains.transform.position.z);
         }
         prevPosition = camera.transform.position;
     }
 
     public void RoundOver()
     {
-        suns.transform.position = sunStartPos;
-        backClouds.transform.position = backClouStartPos;
-        backMountains.transform.position = backMounStartPos;
-        frontClouds.transform.position = frontCloudStartPos;
-        frontMountains.transform.position = frontMountStartPos;
+        if (suns != null)
+        {
+            suns.transform.position = sunStartPos;
+            backClouds.transform.position = backClouStartPos;
+            backMountains.transform.position = backMounStartPos;
+            frontClouds.transform.position = frontCloudStartPos;
+            frontMountains.transform.position = frontMountStartPos;
+        }
     }
 }
