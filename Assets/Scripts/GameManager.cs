@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject[] spawnPoints;//assigned in the FindSpawnpoints() method
 
+    public ParallaxController parallaxController;
     
 
     public Player[] AlivePlayers { get { return players.FindAll(p=>p.Alive).ToArray(); } }//Property returns array of all currently alive players
@@ -159,9 +160,11 @@ public class GameManager : MonoBehaviour
             players[i].SetupPlayer();
 
         }
-
-
+        
+        
         playersAlive = players.Count;
+        parallaxController = GameObject.Find("Background").GetComponent<ParallaxController>();
+        parallaxController.RoundOver();
     }
 
     //Kill player with given number
