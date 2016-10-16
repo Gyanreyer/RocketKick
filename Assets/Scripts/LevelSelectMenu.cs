@@ -6,6 +6,7 @@ using XInputDotNetPure;
 public class LevelSelectMenu : MonoBehaviour {
 
     public LevelButton[] levelButtons;
+    public Text timerText;
 
     //private Player[] players;
     public Color[] playerColors;
@@ -17,6 +18,9 @@ public class LevelSelectMenu : MonoBehaviour {
 
     bool votesLocked;
     bool levelPicked;
+
+    private float countdownTimer;
+
 
 	// Use this for initialization
 	void Start () {
@@ -42,6 +46,8 @@ public class LevelSelectMenu : MonoBehaviour {
             selections[i] = 0;
             levelButtons[0].SelectByPlayer(i);
         }
+
+        countdownTimer = 30;
 	}
 	
 	// Update is called once per frame
@@ -75,6 +81,33 @@ public class LevelSelectMenu : MonoBehaviour {
             prevStates[i] = gpState;
 
         }
+
+        
+        
+
+        //Lock in all votes if timer is down
+        if(countdownTimer <= 0)
+        {
+            for(int i = 0; i < selections.Length; i++)
+            {
+                if(selections[i] >= 0)
+                {
+                    levelButtons[selections[i]].LockInVote(i);
+                    selections[i] = -1;
+                }
+            }
+
+            timerText.text = 0.ToString(); ;
+        }
+        else
+        {
+            timerText.text = ((int)countdownTimer + 1).ToString();
+
+            countdownTimer -= Time.deltaTime;
+        }
+
+
+
 
         votesLocked = true;
 
