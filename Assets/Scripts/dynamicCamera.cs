@@ -97,13 +97,13 @@ public class DynamicCamera : MonoBehaviour
                 //This check here is to prevent the camera from spazzing in and out once it hits its dead zone (the number should be played with a bit in the inspector... 2 is USUALLY good)
                 if (Mathf.Abs(xViewDist - farthestAbsX) > camZoomDeadZone)
                     ZoomTowards(xViewDist, farthestAbsX);
-                Debug.Log(Mathf.Abs(xViewDist - farthestAbsX));
+                //Debug.Log(Mathf.Abs(xViewDist - farthestAbsX));
             }
             else
             {
                 if (Mathf.Abs(yViewDist - farthestAbsY) > camZoomDeadZone)
                     ZoomTowards(yViewDist, farthestAbsY);
-                Debug.Log(Mathf.Abs(yViewDist - farthestAbsY));
+                //Debug.Log(Mathf.Abs(yViewDist - farthestAbsY));
             }
         }
         else

@@ -374,7 +374,7 @@ public class PlayerController : MonoBehaviour {
 
             feetColliding = true;
         }
-        else if(other.gameObject.tag=="Wall")
+        else if(other.gameObject.tag=="Wall" && Vector2.Dot(other.transform.position- transform.position, playerRB.velocity) > 0)
         {
             spriteRen.flipX = (other.gameObject.transform.position.x < transform.position.x);
 
