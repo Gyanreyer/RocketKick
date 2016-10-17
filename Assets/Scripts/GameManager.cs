@@ -68,7 +68,10 @@ public class GameManager : MonoBehaviour
             { 
                 //Kill living player
                 Player player = players.Find(p => p.Alive);
-                Destroy(player.mainObject);
+                if (player != null)
+                {
+                    Destroy(player.mainObject);
+                }
 
                 players.Clear();
 
@@ -107,15 +110,8 @@ public class GameManager : MonoBehaviour
         ResetPlayerScores();
         state = GameState.Playing;
 
-        StartCoroutine(LoadScene(3+scene,3));//Load scene with 3 second delay
-    }
+        SceneManager.LoadScene(3+scene);
 
-    //Load a scene with given index, delay for given amt of time
-    IEnumerator LoadScene(int i, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-
-        SceneManager.LoadScene(i);
     }
 
     public void AddPlayers(Player[] ps)
@@ -163,8 +159,12 @@ public class GameManager : MonoBehaviour
         
         
         playersAlive = players.Count;
-        parallaxController = GameObject.Find("Background").GetComponent<ParallaxController>();
-        parallaxController.RoundOver();
+        GameObject backGround = GameObject.Find("Background");
+        if (backGround != null)
+        {
+            parallaxController = GameObject.Find("Background").GetComponent<ParallaxController>();
+            parallaxController.RoundOver();
+        }
     }
 
     //Kill player with given number
@@ -193,13 +193,12 @@ public class GameManager : MonoBehaviour
                 Text winText = GameObject.Find("WinText").GetComponent<Text>();
 
                 winText.text = "Player " + lastP.PlayerNum + " wins!";
-                winText.color = playerColors[lastP.Index];
+                winText.color = lastP.Color;
 
-                GameObject.Find("ContinueText").GetComponent<Text>().color = playerColors[lastP.Index];
+                GameObject.Find("ContinueText").GetComponent<Text>().color = lastP.Color;
 
                 //Resolve win condition
                 state = GameState.Won;
-                //SceneManager.LoadScene(1);//Load game over scene, not set up now so I disabled it
                 return;
             }
 

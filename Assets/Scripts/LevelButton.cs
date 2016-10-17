@@ -12,14 +12,13 @@ public class LevelButton : MonoBehaviour {
 
     //private Color[] colors;
     public Image[] indicators;
-    private List<Color> colors;
-    private List<Color> lockedInColors;
+    private List<LevelVoter> voters;
 
     // Use this for initialization
     void Awake() {
         numSelectedBy = 0;
 
-        colors = new List<Color>(4);
+        voters = new List<LevelVoter>(4);
 
         for(int i = 0; i < indicators.Length; i++)
         {
@@ -31,36 +30,47 @@ public class LevelButton : MonoBehaviour {
         
     }
 
-    public void SelectByPlayer(int i)
+    public void SelectByPlayer(LevelVoter v)
     {
-        colors.Add(levSelMenu.playerColors[i]*.75f);
+        if (voters.Contains(v)) return;
 
-        indicators[colors.Count - 1].color = colors[colors.Count - 1];
+        voters.Add(v);
+
+        indicators[voters.Count - 1].color = v.color* .75f;
 
         numSelectedBy++;
     }
 
-    public void DeselectByPlayer(int i)
+    public void DeselectByPlayer(LevelVoter v)
     {
-        colors.Remove(levSelMenu.playerColors[i]*.75f);
+        voters.Remove(v);
 
         numSelectedBy--;
 
         for(int j = 0; j < 4; j++)
         {
-            if (j < colors.Count)
-                indicators[j].color = colors[j];
+            if (j < voters.Count)
+                indicators[j].color = voters[j].color * (voters[j].locked ? 1 : .75f);
             else
                 indicators[j].color = Color.clear;
         }
     }
 
-    public void LockInVote(int i)
+    public void LockInVote(LevelVoter v)
     {
-        int ind = colors.IndexOf(levSelMenu.playerColors[i]*.75f);
+        int ind = voters.IndexOf(v);//voters.FindIndex(voter => voter.index == v.index);
 
-        colors[ind] = levSelMenu.playerColors[i];
+        voters[ind].locked = true;
 
-        indicators[ind].color = colors[ind];
+        indicators[ind].color = voters[ind].color;
+    }
+
+    public void UnlockVote(LevelVoter v)
+    {
+        int ind = voters.IndexOf(v);
+
+        voters[ind].locked = false;
+
+        indicators[ind].color = voters[ind].color * .75f;
     }
 }

@@ -552,7 +552,7 @@ Prefab:
         type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5df647f54dd9eac42bd786ce153d836a, type: 2}
+      objectReference: {fileID: 2100000, guid: 507e5c3c38df896428409f6f11212e0a, type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 18c776bfe94de5c4893998f5246c440c, type: 2}
   m_IsPrefabParent: 0
@@ -815,7 +815,7 @@ Prefab:
         type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5df647f54dd9eac42bd786ce153d836a, type: 2}
+      objectReference: {fileID: 2100000, guid: 507e5c3c38df896428409f6f11212e0a, type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 443439ef26b69b5498472d5358665c65, type: 2}
   m_IsPrefabParent: 0
@@ -925,7 +925,7 @@ Prefab:
         type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5df647f54dd9eac42bd786ce153d836a, type: 2}
+      objectReference: {fileID: 2100000, guid: 507e5c3c38df896428409f6f11212e0a, type: 2}
     - target: {fileID: 61000010463691930, guid: 18c776bfe94de5c4893998f5246c440c,
         type: 2}
       propertyPath: m_Material
@@ -1071,7 +1071,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 5df647f54dd9eac42bd786ce153d836a, type: 2}
+  - {fileID: 2100000, guid: 507e5c3c38df896428409f6f11212e0a, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -2135,7 +2135,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2036450227}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.6507235, y: 1.5, z: 0}
+  m_LocalPosition: {x: 0.6507235, y: 1.5, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:

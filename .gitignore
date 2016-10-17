@@ -31,3 +31,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Assets/Scripts/dynamicCamera.cs
+Assets/Scripts/dynamicCamera.cs.meta

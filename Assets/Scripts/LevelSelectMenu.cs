@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using XInputDotNetPure;
 
 public class LevelSelectMenu : MonoBehaviour {
@@ -8,19 +9,17 @@ public class LevelSelectMenu : MonoBehaviour {
     public LevelButton[] levelButtons;
     public Text timerText;
 
-    //private Player[] players;
-    public Color[] playerColors;
-    private int[] selections;//index is for each player, value is the level selected
-
     private GameManager gm;
 
     private GamePadState[] prevStates;
 
-    bool votesLocked;
-    bool levelPicked;
+    int numLocked;
 
     private float countdownTimer;
 
+    public LevelVoter[] voters;
+
+    private float levelSelectedCountdown;
 
 	// Use this for initialization
 	void Start () {
@@ -28,76 +27,79 @@ public class LevelSelectMenu : MonoBehaviour {
 
         Player[] players = gm.AllPlayers;
 
-        playerColors = new Color[players.Length];
+        voters = new LevelVoter[players.Length];
 
         for(int i = 0; i < players.Length; i++)
         {
-            playerColors[i] = players[i].Color;
+            voters[i] = new LevelVoter(i,players[i].Color);
+            levelButtons[0].SelectByPlayer(voters[i]);
         }
 
-        selections = new int[players.Length];
-
-        prevStates = new GamePadState[players.Length];
-
-        //levelButtons = GameObject.Find("Canvas").GetComponentsInChildren<LevelButton>();
-
-        for(int i = 0; i < playerColors.Length; i++)
-        {
-            selections[i] = 0;
-            levelButtons[0].SelectByPlayer(i);
-        }
+        prevStates = new GamePadState[4];
 
         countdownTimer = 30;
+        levelSelectedCountdown = 3;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-
-        if (levelPicked) return;
-
-        for(int i = 0; i < playerColors.Length; i++)
+        for(int i = 0; i < voters.Length; i++)
         {
-            if (selections[i] < 0) continue;//Player locked in when selection set to -1
-
             GamePadState gpState = GamePad.GetState((PlayerIndex)i);
 
             if (gpState.ThumbSticks.Left.X < -.5f && prevStates[i].ThumbSticks.Left.X >= -.5f) ChangeSelection(i, -1);
+            
 
-            else if (gpState.ThumbSticks.Left.X > .5f && prevStates[i].ThumbSticks.Left.X <= .5f) ChangeSelection(i, 1);
+            if (gpState.ThumbSticks.Left.X > .5f && prevStates[i].ThumbSticks.Left.X <= .5f) ChangeSelection(i, 1);
 
-            else if (gpState.ThumbSticks.Left.Y < -.5f && prevStates[i].ThumbSticks.Left.Y >= -.5f) ChangeSelection(i,3);
+            if (gpState.ThumbSticks.Left.Y < -.5f && prevStates[i].ThumbSticks.Left.Y >= -.5f) ChangeSelection(i,3);
 
-            else if (gpState.ThumbSticks.Left.Y > .5f && prevStates[i].ThumbSticks.Left.Y <= .5f) ChangeSelection(i, -3);
+            if (gpState.ThumbSticks.Left.Y > .5f && prevStates[i].ThumbSticks.Left.Y <= .5f) ChangeSelection(i, -3);
 
-            else if (gpState.Buttons.A == ButtonState.Pressed && prevStates[i].Buttons.A != ButtonState.Pressed)
+            if (gpState.Buttons.A == ButtonState.Pressed && prevStates[i].Buttons.A != ButtonState.Pressed && !voters[i].locked)
             {
-                levelButtons[selections[i]].LockInVote(i);
+                levelButtons[voters[i].selection].LockInVote(voters[i]);
+                numLocked++;
 
-                selections[i] = -1;
+                voters[i].locked = true;
             }
+            if(gpState.Buttons.B == ButtonState.Pressed && prevStates[i].Buttons.B != ButtonState.Pressed)
+            {
+                if(voters[i].locked)
+                {
+                    levelButtons[voters[i].selection].UnlockVote(voters[i]);
+                    voters[i].locked = false;
+                    numLocked--;
 
+                    levelSelectedCountdown = 3;
+                }
+
+                else if(numLocked <= 0)
+                {
+                    SceneManager.LoadScene(1);
+                }
+            }
 
             prevStates[i] = gpState;
 
         }
-
-        
         
 
         //Lock in all votes if timer is down
         if(countdownTimer <= 0)
         {
-            for(int i = 0; i < selections.Length; i++)
+            for(int i = 0; i < voters.Length; i++)
             {
-                if(selections[i] >= 0)
-                {
-                    levelButtons[selections[i]].LockInVote(i);
-                    selections[i] = -1;
+                if(!voters[i].locked)
+                {                  
+                    levelButtons[levelButtons.Length-1].LockInVote(voters[i]);
+                    voters[i].locked = true;
+                    numLocked++;
                 }
             }
 
-            timerText.text = 0.ToString(); ;
+            timerText.text = 0.ToString();
         }
         else
         {
@@ -106,63 +108,53 @@ public class LevelSelectMenu : MonoBehaviour {
             countdownTimer -= Time.deltaTime;
         }
 
-
-
-
-        votesLocked = true;
-
-        for(int i = 0; i < selections.Length; i++)
+        if(numLocked == voters.Length)
         {
-            if (selections[i] >= 0)
+            levelSelectedCountdown -= Time.deltaTime;
+
+
+            if(levelSelectedCountdown <= 0)
             {
-                votesLocked = false;
-                break;
-            }  
-        }
+                List<int> levelsToPickFrom = new List<int>();
 
-
-        if(votesLocked)
-        {
-            List<int> levelsToPickFrom = new List<int>();
-
-            for(int i = 0; i < levelButtons.Length; i++)
-            {
-                if(levelButtons[i].numSelectedBy > 0)
-                    levelsToPickFrom.Add(i);
-            }
-
-            int highestVoteAmt = 0;
-
-            for(int i = 0; i < levelsToPickFrom.Count; i++)
-            {
-                if(levelButtons[levelsToPickFrom[i]].numSelectedBy < highestVoteAmt)
+                for (int i = 0; i < levelButtons.Length; i++)
                 {
-                    levelsToPickFrom.Remove(i);
-                }                
-            }
+                    if (levelButtons[i].numSelectedBy > 0)
+                        levelsToPickFrom.Add(i);
+                }
+
+                int highestVoteAmt = 0;
+
+                for (int i = 0; i < levelsToPickFrom.Count; i++)
+                {
+                    if (levelButtons[levelsToPickFrom[i]].numSelectedBy < highestVoteAmt)
+                    {
+                        levelsToPickFrom.Remove(i);
+                    }
+                }
 
 
-            int selectedLevel;
+                int selectedLevel;
 
-            if(levelsToPickFrom.Count == 1)
-            {
-                selectedLevel = levelsToPickFrom[0];
-            }
-            else
-            {
-                selectedLevel = levelsToPickFrom[Random.Range(0, levelsToPickFrom.Count - 1)];
-            }
+                if (levelsToPickFrom.Count == 1)
+                {
+                    selectedLevel = levelsToPickFrom[0];
+                }
+                else
+                {
+                    selectedLevel = levelsToPickFrom[Random.Range(0, levelsToPickFrom.Count - 1)];
+                }
 
 
-            //If the selection is the last button, this will randomly select a level
-            if (selectedLevel == levelButtons.Length - 1)
-                selectedLevel = Random.Range(0,selectedLevel-1);
+                //If the selection is the last button, this will randomly select a level
+                if (selectedLevel == levelButtons.Length - 1)
+                    selectedLevel = Random.Range(0, selectedLevel - 1);
 
-            levelButtons[selectedLevel].GetComponent<Outline>().enabled = true;
+                levelButtons[selectedLevel].GetComponent<Outline>().enabled = true;
 
-            gm.StartGame(selectedLevel);
+                gm.StartGame(selectedLevel);
 
-            levelPicked = true;
+            }  
 
         }
 
@@ -170,34 +162,39 @@ public class LevelSelectMenu : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             gm.StartGame(0);
-            levelPicked = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             gm.StartGame(1);
-            levelPicked = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             gm.StartGame(2);
-            levelPicked = true;
         }
         else if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             gm.StartGame(3);
-            levelPicked = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            gm.StartGame(4);
         }
 
     }
 
     private void ChangeSelection(int playerInd, int changeAmt)
     {
-        levelButtons[selections[playerInd]].DeselectByPlayer(playerInd);
+        if (voters[playerInd].locked) return;
 
-        selections[playerInd]=(selections[playerInd]+changeAmt)%levelButtons.Length;
+        levelButtons[voters[playerInd].selection].DeselectByPlayer(voters[playerInd]);
 
-        if (selections[playerInd] < 0) selections[playerInd] = levelButtons.Length - Mathf.Abs(selections[playerInd]);
+        voters[playerInd].selection = (voters[playerInd].selection + changeAmt) % levelButtons.Length;
 
-        levelButtons[selections[playerInd]].SelectByPlayer(playerInd);
+        if (voters[playerInd].selection < 0) voters[playerInd].selection = levelButtons.Length - Mathf.Abs(voters[playerInd].selection);
+
+        levelButtons[voters[playerInd].selection].SelectByPlayer(voters[playerInd]);
+
     }
+
+
 }
