@@ -79,6 +79,7 @@
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\LevelButton.cs" />
     <Compile Include="Assets\Scripts\LevelSelectMenu.cs" />
+    <Compile Include="Assets\Scripts\LevelVoter.cs" />
     <Compile Include="Assets\Scripts\MainMenuManager.cs" />
     <Compile Include="Assets\Scripts\MenuButton.cs" />
     <Compile Include="Assets\Scripts\ParallaxController.cs" />

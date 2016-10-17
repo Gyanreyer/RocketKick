@@ -265,6 +265,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selected: 0
+  origColor: {r: 0.7686275, g: 0.42352945, b: 0.48235297, a: 1}
+  selColor: {r: 0.42352945, g: 0.69411767, b: 0.7686275, a: 1}
 --- !u!1 &857469615
 GameObject:
   m_ObjectHideFlags: 0
@@ -417,7 +419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_UiScaleMode: 1
-  m_ReferencePixelsPerUnit: 228.07
+  m_ReferencePixelsPerUnit: 200
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 1
@@ -554,6 +556,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selected: 0
+  origColor: {r: 0.7686275, g: 0.42352945, b: 0.48235297, a: 1}
+  selColor: {r: 0.42352945, g: 0.69411767, b: 0.7686275, a: 1}
 --- !u!1 &1951433292
 GameObject:
   m_ObjectHideFlags: 0
@@ -781,3 +785,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selected: 0
+  origColor: {r: 0.7686275, g: 0.42352945, b: 0.48235297, a: 1}
+  selColor: {r: 0.42352945, g: 0.69411767, b: 0.7686275, a: 1}

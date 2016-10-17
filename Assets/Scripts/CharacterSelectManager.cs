@@ -71,6 +71,13 @@ public class CharacterSelectManager : MonoBehaviour {
         {
             GamePadState gpState = GamePad.GetState((PlayerIndex)i);
 
+            //Navigate back to main menu if no players and someone presses B
+            if (playerCount == 0 && gpState.Buttons.B == ButtonState.Pressed && prevStates[i].Buttons.B != ButtonState.Pressed)
+            {
+                SceneManager.LoadScene(0);
+            }
+
+
             if (players[i] == null && gpState.Buttons.Start == ButtonState.Pressed)
             {
                 Join(i);
