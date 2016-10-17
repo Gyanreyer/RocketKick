@@ -465,6 +465,7 @@ MonoBehaviour:
   - {fileID: 936394751}
   - {fileID: 924094071}
   - {fileID: 1151020182}
+  - {fileID: 1919240563}
   timerText: {fileID: 1250917369}
   playerColors: []
 --- !u!4 &938743500
@@ -599,7 +600,7 @@ Prefab:
     - target: {fileID: 114000014199367026, guid: 49703f27a761ef54bbaaf2c799049bf8,
         type: 2}
       propertyPath: m_Text
-      value: '?'
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 114000013331735046, guid: 49703f27a761ef54bbaaf2c799049bf8,
         type: 2}
@@ -1236,7 +1237,12 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1000012861274848, guid: 49703f27a761ef54bbaaf2c799049bf8, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000014199367026, guid: 49703f27a761ef54bbaaf2c799049bf8,
+        type: 2}
+      propertyPath: m_Text
+      value: '?'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 49703f27a761ef54bbaaf2c799049bf8, type: 2}
@@ -1246,6 +1252,12 @@ RectTransform:
   m_PrefabParentObject: {fileID: 224000010955127276, guid: 49703f27a761ef54bbaaf2c799049bf8,
     type: 2}
   m_PrefabInternal: {fileID: 1919240561}
+--- !u!114 &1919240563 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114000013359475722, guid: 49703f27a761ef54bbaaf2c799049bf8,
+    type: 2}
+  m_PrefabInternal: {fileID: 1919240561}
+  m_Script: {fileID: 11500000, guid: 8a78c5158514ebd42848b9f35e78f8e0, type: 3}
 --- !u!1 &1951433292
 GameObject:
   m_ObjectHideFlags: 0

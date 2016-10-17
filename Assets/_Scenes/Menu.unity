@@ -244,7 +244,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Options
+  m_Text: 'Controls
 
 '
 --- !u!222 &578261909
@@ -596,6 +596,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 1000012083885136, guid: db1b1b1ac879bf4418fe3fe7ad799a68,
     type: 2}
   spawnPoints: []
+  parallaxController: {fileID: 0}
 --- !u!4 &1951433294
 Transform:
   m_ObjectHideFlags: 0

@@ -67,9 +67,11 @@ public class MainMenuManager : MonoBehaviour {
             {
                 if (selectedButton == 2)
                     Application.Quit();
+                if (selectedButton == 1)
+                    SceneManager.LoadScene(8);
 
                 else
-                    SceneManager.LoadScene(selectedButton+1);
+                    SceneManager.LoadScene(selectedButton + 1);
             }
 
 
